@@ -82,7 +82,7 @@ noSsSerial (int argc, char **argv)
                 {
                     for (int j = 0; j < 20; ++j)
                     {
-                        Circle pm = *physics.createCircle(Vec2f(((i * 450) / 20) + 450, ((j * 220) / 20) + 200), 1, 5);
+                        Circle pm = *physics.createCircle(Vec2f(((i * 450) / 20) + 450 + counter1, ((j * 220) / 20) + 200 + counter1), 1, 5);
                         /*cirs.emplace_back( pm.rad );
                         cirs.back().setPointCount(40);
                         cirs.back().setFillColor(sf::Color::White);
@@ -101,17 +101,17 @@ noSsSerial (int argc, char **argv)
         //window.draw(back);
 
         //apply gravity
-        /*for (unsigned i = 0; i < physics.bodies.size(); ++i)
+        for (unsigned i = 0; i < physics.bodies.size(); ++i)
         {
             physics.bodies[i].applyAcc(Vec2f(0, 2000));
         }
         physics.update(dt.asSeconds());
-        */
+        
 
-        if (counter1 % 100 == 0)
+        /*if (counter1 % 100 == 0)
         {
             std::cout << counter1 << std::endl;
-        }
+        }*/
 
         rd.draw(window);
 

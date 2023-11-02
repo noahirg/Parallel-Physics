@@ -8,15 +8,16 @@ PhyWorld::update(float dt)
 {
     for (int k = 0; k < ITER; ++k)
     {
-        applyConstraint();
         solveCollisions();
         updatePositions(dt / static_cast<float>(ITER));
+        applyConstraint();
     }
 }
 
 void
 PhyWorld::solveCollisions()
 {
+    float epsilon = .0001f;
     for (int i = 0; i < bodies.size(); ++i)
     {
         for (int j = i + 1; j < bodies.size(); ++j)
@@ -30,7 +31,7 @@ PhyWorld::solveCollisions()
             //float jRad = bodies[i].getRad(bodies[j].pos);
             //float iRad = bodies[j].getRad(bodies[i].pos);
             float radD = iRad + jRad;
-            if (distSq < radD * radD)
+            if (distSq < radD * radD && distSq > epsilon)
             {
                 float dist = colAxis.magn();
                 Vec2f normal = Vec2f::normalize(colAxis);
@@ -56,8 +57,17 @@ PhyWorld::solveCollisions()
 void
 PhyWorld::applyConstraint() {
     for (int i = 0; i < bodies.size(); ++i)
-        {
-        Vec2f position = Vec2f(640.f, 360.f);
+    {
+        if (bodies[i].pos.x > 1280 - bodies[i].rad)
+            bodies[i].pos.x = 1280 - bodies[i].rad;
+        else if (bodies[i].pos.x < bodies[i].rad)
+            bodies[i].pos.x = bodies[i].rad;
+
+        if (bodies[i].pos.y > 720 - bodies[i].rad)
+            bodies[i].pos.y = 720 - bodies[i].rad;
+        else if (bodies[i].pos.y < bodies[i].rad)
+            bodies[i].pos.y = bodies[i].rad;
+        /*Vec2f position = Vec2f(640.f, 360.f);
         float radius = 300.f;
         Vec2f toObj = bodies[i].pos - position;
         float distSq = toObj.magnSq();
@@ -65,7 +75,7 @@ PhyWorld::applyConstraint() {
             float dist = toObj.magn();
             Vec2f n = toObj / dist;
             bodies[i].pos = position + n * (radius - bodies[i].rad);
-        }
+        }*/
     }
 }
 
