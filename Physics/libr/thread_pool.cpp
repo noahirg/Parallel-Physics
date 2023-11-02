@@ -27,8 +27,14 @@ ThreadPool::addTask(std::function<void()>&& f)
 }
 
 void
+ThreadPool::wait()
+{
+    m_tasks.waitComplete();
+}
+
+void
 ThreadPool::stop()
 {
-    std::function<void()> empty;
-    m_tasks.enqueue(empty);
+    for (auto& t : m_threads)
+        t.join();
 }

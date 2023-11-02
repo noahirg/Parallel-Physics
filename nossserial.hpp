@@ -46,7 +46,7 @@ noSsSerial (int argc, char **argv)
 
     Render rd (physics, tp);
 
-    
+    int counter1 = 0;
     //init font
     sf::Text fps;
     sf::Font font;
@@ -73,16 +73,16 @@ noSsSerial (int argc, char **argv)
             if (sf::Event::Closed == evnt.type) 
             {
                 std::cout << "Closing Program" << std::endl;
-                tp.stop();
                 window.close();
             }
             else if (sf::Event::MouseButtonPressed == evnt.type) {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                ++counter1;
                 for (int i = 0; i < 20; ++i)
                 {
                     for (int j = 0; j < 20; ++j)
                     {
-                        Circle pm = *physics.createCircle(Vec2f(((i * 450) / 20) + 450, ((j * 220) / 20) + 220), 1, 5);
+                        Circle pm = *physics.createCircle(Vec2f(((i * 450) / 20) + 450, ((j * 220) / 20) + 200), 1, 5);
                         /*cirs.emplace_back( pm.rad );
                         cirs.back().setPointCount(40);
                         cirs.back().setFillColor(sf::Color::White);
@@ -101,14 +101,18 @@ noSsSerial (int argc, char **argv)
         //window.draw(back);
 
         //apply gravity
-        for (unsigned i = 0; i < physics.bodies.size(); ++i)
+        /*for (unsigned i = 0; i < physics.bodies.size(); ++i)
         {
             physics.bodies[i].applyAcc(Vec2f(0, 2000));
-            //window.draw(cirs[i]);
         }
         physics.update(dt.asSeconds());
+        */
 
-        //std::cout << dt.asSeconds() << std::endl;
+        if (counter1 % 100 == 0)
+        {
+            std::cout << counter1 << std::endl;
+        }
+
         rd.draw(window);
 
         //window.draw(buf);
@@ -116,6 +120,7 @@ noSsSerial (int argc, char **argv)
         window.display();
     }
 
+    tp.stop();
     return 0;
 }
 

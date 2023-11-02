@@ -8,6 +8,7 @@ class ThreadPool
     ThreadPool(unsigned threadCount);
     void execute(std::function<void(unsigned, unsigned)>&& fullF, unsigned count);
     void addTask(std::function<void()>&& f);
+    void wait();
     void stop();
 
     private:

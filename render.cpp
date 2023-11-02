@@ -12,7 +12,7 @@ Render::draw(sf::RenderWindow& window)
     states.texture = &rTexture;
     //update particles
     updateObjects();
-    
+    rTp.wait();
     window.draw(rObjects, states);
 }
 
