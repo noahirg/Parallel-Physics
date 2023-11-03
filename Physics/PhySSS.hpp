@@ -27,9 +27,11 @@ class PhySSS : public PhyWorld
     void
     solveCollisions()
     {
+        //std::cout << "begin solColl" << std::endl;
         float epsilon = .0001f;
         for (int i = 0; i < bodies.size(); ++i)
         {
+            //Runs but query still isn't right
             std::vector<int> range = tree->query(bodies[i].pos.x, bodies[i].pos.y, 50);
             for (int j = 0; j < range.size(); ++j)
             {

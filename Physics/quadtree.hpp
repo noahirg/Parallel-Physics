@@ -116,7 +116,7 @@ class Quad
     bool
     intersects(float x, float y, float rad)
     {
-        //find if circle intersects rectangle
+        //find if circle intersects rectangle of Quad
         float Xn = std::max(static_cast<float>(m_x), std::min(x, static_cast<float>(m_x + m_width)));
         float Yn = std::max(static_cast<float>(m_y), std::min(y, static_cast<float>(m_y + m_height)));
         
@@ -128,13 +128,12 @@ class Quad
     std::vector<int>
     query(float x, float y, float rad)
     {
+        std::vector<int> found;
         if (!intersects(x, y, rad))
         {
             //Range isn't in quad
-            std::vector<int> empty;
-            return empty;
+            return found;
         }
-
         //If no children return ids
         if (children[0] == nullptr)
         {
@@ -145,12 +144,12 @@ class Quad
         std::vector<int> ch1 = children[1]->query(x, y, rad);
         std::vector<int> ch2 = children[2]->query(x, y, rad);
         std::vector<int> ch3 = children[3]->query(x, y, rad);
-        m_ids.insert(m_ids.end(), ch0.begin(), ch0.end());
-        m_ids.insert(m_ids.end(), ch1.begin(), ch1.end());
-        m_ids.insert(m_ids.end(), ch2.begin(), ch2.end());
-        m_ids.insert(m_ids.end(), ch3.begin(), ch3.end());
+        found.insert(found.end(), ch0.begin(), ch0.end());
+        found.insert(found.end(), ch1.begin(), ch1.end());
+        found.insert(found.end(), ch2.begin(), ch2.end());
+        found.insert(found.end(), ch3.begin(), ch3.end());
 
-        return m_ids;
+        return found;
     }
 
     
