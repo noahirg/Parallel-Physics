@@ -94,3 +94,10 @@ PhyWorld::createCircle(Vec2f pos, float mass, float rad, bool pinned)
     bodies.emplace_back( pos, mass, rad, pinned );
     return &bodies.back();
 }
+
+void
+PhyWorld::insertToTree(Vec2f pos, unsigned id)
+{
+    //empty on purpose
+    return;
+}

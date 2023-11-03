@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <algorithm>
 #include "Circle.hpp"
 #include "PhyWorld.hpp"
 
@@ -83,7 +84,28 @@ class Quad
     {
         //If no children
         if (children[0] == nullptr)
+        {
+            //**********This part definitely isn't right yet************
+            std::vector<int> tempRem;
+            //Make sure elements still in this quad
+            for (unsigned i = 0; i < m_ids.size(); ++i)
+            {
+                //If not in quad remove
+                if (!inQuad(phy->bodies[m_ids[i]].pos.x, phy->bodies[m_ids[i]].pos.y))
+                {
+                    tempRem.push_back(m_ids[i]);
+                }
+            }
+            //Remove points not in quad
+            for (unsigned i = 0; i < tempRem.size(); ++i)
+            {
+                m_ids.erase(std::remove(m_ids.begin(), m_ids.end(), tempRem[i]), m_ids.end());
+                //Add the quads back into tree
+                phy->insertToTree(Vec2f(phy->bodies[tempRem[i]].pos.x, phy->bodies[tempRem[i]].pos.y), tempRem[i]);
+            }
+
             return m_ids.size();
+        }
 
         //If children
         unsigned childSum = 0;
@@ -111,6 +133,7 @@ class Quad
             children[2] = nullptr;
             children[3] = nullptr;
         }
+        return childSum;
     }
 
     bool
@@ -123,6 +146,12 @@ class Quad
         float Dx = Xn - x;
         float Dy = Yn - y;
         return (Dx * Dx + Dy * Dy) <= rad * rad;
+    }
+
+    bool
+    inQuad(float x, float y)
+    {
+        return (x >= m_x && x < (m_x + m_width) && y >= m_y && y < (m_y + m_height));
     }
 
     std::vector<int>
@@ -174,6 +203,11 @@ class Quadtree
         m_root = new Quad(0, 0, m_width, m_height, 0, phy);
     }
 
+    ~Quadtree()
+    {
+        delete m_root;
+    }
+
     void
     addSingle(float x, float y, unsigned id)
     {
@@ -192,8 +226,20 @@ class Quadtree
     void
     update()
     {
+        //Empty all children of root and root
+        delete m_root->children[0];
+        delete m_root->children[1];
+        delete m_root->children[2];
+        delete m_root->children[3];
+
+        m_root->m_ids.clear();
+        
+        //Add all particles back in
+        initAdd();
+        /*
         //Eventually will need to account for deleted objects
         m_root->update();
+        */
     }
 
     std::vector<int>

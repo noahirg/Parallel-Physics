@@ -21,6 +21,8 @@ class PhySSS : public PhyWorld
             solveCollisions();
             updatePositions(dt / static_cast<float>(ITER));
             applyConstraint();
+            tree->update();
+            std::cout << "after update: " << bodies.size() << std::endl;
         }
     }
 
@@ -74,8 +76,15 @@ class PhySSS : public PhyWorld
     createCircle(Vec2f pos, float mass, float rad, bool pinned = false)
     {
         bodies.emplace_back( pos, mass, rad, pinned );
-        tree->addSingle(pos.x, pos.y, bodies.size() - 1);
+        insertToTree(pos, bodies.size() - 1);
+        //tree->addSingle(pos.x, pos.y, bodies.size() - 1);
         return &bodies.back();
+    }
+
+    void
+    insertToTree(Vec2f pos, unsigned id)
+    {
+        tree->addSingle(pos.x, pos.y, id);
     }
 
     Quadtree* tree;
