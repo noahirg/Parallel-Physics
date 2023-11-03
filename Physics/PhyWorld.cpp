@@ -1,6 +1,6 @@
 #include "PhyWorld.hpp"
 
-PhyWorld::PhyWorld(bool check) : checkCollisions(check)
+PhyWorld::PhyWorld(int sizeX, int sizeY, bool check) : checkCollisions(check), worldSize(Vec2f(sizeX, sizeY))
 {}
 
 void
@@ -58,13 +58,13 @@ void
 PhyWorld::applyConstraint() {
     for (int i = 0; i < bodies.size(); ++i)
     {
-        if (bodies[i].pos.x > 1280 - bodies[i].rad)
-            bodies[i].pos.x = 1280 - bodies[i].rad;
+        if (bodies[i].pos.x > worldSize.x - bodies[i].rad)
+            bodies[i].pos.x = worldSize.x - bodies[i].rad;
         else if (bodies[i].pos.x < bodies[i].rad)
             bodies[i].pos.x = bodies[i].rad;
 
-        if (bodies[i].pos.y > 720 - bodies[i].rad)
-            bodies[i].pos.y = 720 - bodies[i].rad;
+        if (bodies[i].pos.y > worldSize.y - bodies[i].rad)
+            bodies[i].pos.y = worldSize.y - bodies[i].rad;
         else if (bodies[i].pos.y < bodies[i].rad)
             bodies[i].pos.y = bodies[i].rad;
         /*Vec2f position = Vec2f(640.f, 360.f);

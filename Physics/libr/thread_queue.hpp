@@ -10,19 +10,21 @@ class ThreadQueue
 {
     public:
 
+    template <typename callable>
     void
-    enqueue(std::function<void()>& f)
+    enqueue(callable&& f)
     {
         {
             std::unique_lock guard (m_mutex);
-            m_tasks.push(f);
+            m_tasks.push(std::forward<callable>(f));
             ++m_taskCount;
         }
         m_cond.notify_one();
     }
 
+    template <typename callable>
     bool
-    dequeue(std::function<void()>& f)
+    dequeue(callable&& f)
     {
         std::unique_lock guard (m_mutex);
         if (m_tasks.empty())

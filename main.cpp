@@ -10,7 +10,7 @@ main (int argc, char **argv)
 {
     //For now start nossserial but eventually take input to start it in different ways
     noSsSerial(argc, argv);
-    std::cout << std::thread::hardware_concurrency() << std::endl;
+    //std::cout << std::thread::hardware_concurrency() << std::endl;
 
     return 0;
 }
