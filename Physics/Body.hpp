@@ -10,6 +10,9 @@ class Body
     Vec2f posOld;
     float mass;
     float rad;
+    short red = 255;
+    short blue = 255;
+    short green = 255;
 
     Body();
     Body(float x, float y, float mass, bool pinned = false);
@@ -21,4 +24,5 @@ class Body
     void applyAcc(float accx, float accy);
     void pin();
     virtual float getRad(Vec2f otherPos) {return rad;}
+    std::tuple<short, short, short> getColor();
 };

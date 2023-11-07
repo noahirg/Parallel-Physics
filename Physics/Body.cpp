@@ -63,3 +63,9 @@ Body::pin()
 {
     pinned = true;
 }
+
+std::tuple<short, short, short> 
+Body::getColor()
+{
+    return {red, green, blue};
+}

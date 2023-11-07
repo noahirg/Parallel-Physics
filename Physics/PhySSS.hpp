@@ -10,7 +10,7 @@ class PhySSS : public PhyWorld
 
     PhySSS(int sizeX, int sizeY, bool check = false) : PhyWorld(sizeX, sizeY, check)
     {
-        tree = new Quadtree(static_cast<unsigned>(worldSize.x), static_cast<unsigned>(worldSize.y), this);
+        tree = new Quadtree(static_cast<int>(worldSize.x), static_cast<int>(worldSize.y), this);
     }
 
     void
@@ -18,11 +18,22 @@ class PhySSS : public PhyWorld
     {
         for (int k = 0; k < ITER; ++k)
         {
+            tempColor();
             solveCollisions();
             updatePositions(dt / static_cast<float>(ITER));
             applyConstraint();
             tree->update();
-            std::cout << "after update: " << bodies.size() << std::endl;
+        }
+    }
+
+    void
+    tempColor()
+    {
+        for (int i = 0; i < bodies.size(); ++i)
+        {
+            bodies[i].red = 255;
+            bodies[i].blue = 255;
+            bodies[i].green = 255;
         }
     }
 
@@ -34,18 +45,23 @@ class PhySSS : public PhyWorld
         for (int i = 0; i < bodies.size(); ++i)
         {
             //Runs but query still isn't right
-            std::vector<int> range = tree->query(bodies[i].pos.x, bodies[i].pos.y, 50);
+            std::vector<unsigned> range = tree->query(bodies[i].pos.x, bodies[i].pos.y, 3 * bodies[i].rad);
             for (int j = 0; j < range.size(); ++j)
             {
-                if (i == j)
+                if (i == range[j])
                     continue;
 
-                Vec2f colAxis = bodies[i].pos - bodies[j].pos;
+                if (i == 299)
+                {
+                    bodies[range[j]].red = 0;
+                }
+
+                Vec2f colAxis = bodies[i].pos - bodies[range[j]].pos;
                 float distSq = colAxis.magnSq();
                 //for poly - get line it crossed 
                 // push the shape along the normal of that line
                 float iRad = bodies[i].rad;
-                float jRad = bodies[j].rad;
+                float jRad = bodies[range[j]].rad;
                 //float jRad = bodies[i].getRad(bodies[j].pos);
                 //float iRad = bodies[j].getRad(bodies[i].pos);
                 float radD = iRad + jRad;
@@ -57,16 +73,16 @@ class PhySSS : public PhyWorld
                     float di = (jRad / radD) * delta;;
                     float dj = (iRad / radD) * delta;;
 
-                    if (bodies[i].pinned && bodies[j].pinned)
+                    if (bodies[i].pinned && bodies[range[j]].pinned)
                         {di = 0; dj = 0;}
                     else if (bodies[i].pinned)
                         dj = delta;
-                    else if (bodies[j].pinned)
+                    else if (bodies[range[j]].pinned)
                         di = delta;
 
                     
                     bodies[i].pos += di * normal;
-                    bodies[j].pos -= dj * normal;
+                    bodies[range[j]].pos -= dj * normal;
                 }
             }
         }
@@ -85,6 +101,12 @@ class PhySSS : public PhyWorld
     insertToTree(Vec2f pos, unsigned id)
     {
         tree->addSingle(pos.x, pos.y, id);
+    }
+
+    std::vector<std::array<int, 4>>
+    getQuadtree()
+    {
+        return tree->getQuads();
     }
 
     Quadtree* tree;

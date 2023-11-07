@@ -4,13 +4,13 @@
 #include "Circle.hpp"
 #include "PhyWorld.hpp"
 
-const unsigned MAX_NUM = 16;
-const unsigned MAX_DEPTH = 3;
+const int MAX_NUM = 8;
+const int MAX_DEPTH = 4;
 
 class Quad
 {
     public:
-    Quad(unsigned x, unsigned y, unsigned width, unsigned height, unsigned depth, PhyWorld* phy)
+    Quad(int x, int y, int width, int height, unsigned depth, PhyWorld* phy)
         : m_x(x), m_y(y), m_width(width), m_height(height), m_depth(depth), phy(phy)
     {}
 
@@ -28,7 +28,8 @@ class Quad
         //If no children
         if (children[0] == nullptr)
         {
-            if (m_ids.size() > MAX_NUM)
+            //std::cout << "?: " << m_ids.size() << std::endl;
+            if (static_cast<int>(m_ids.size()) + 1 > MAX_NUM)
             {
                 //split
                 if (split())
@@ -47,8 +48,8 @@ class Quad
     void
     addToChild(float x, float y, unsigned id)
     {
-        int quadIDx = 2 * x > m_width;
-        int quadIDy = 2 * y > m_height;
+        int quadIDx = static_cast<int>(2 * (x - m_x)) > m_width;
+        int quadIDy = static_cast<int>(2 * (y - m_y)) > m_height;
         int indx = quadIDx + quadIDy * 2;
         children[indx]->add(x, y, id);
     }
@@ -60,10 +61,12 @@ class Quad
             return false;
 
         //Create children
-        children[0] = new Quad(m_x, m_y, m_width / 2, m_height / 2, m_depth + 1, phy);
-        children[1] = new Quad(m_width / 2, m_y, m_width, m_height / 2, m_depth + 1, phy);
-        children[2] = new Quad(m_x, m_height / 2, m_width / 2, m_height, m_depth + 1, phy);
-        children[3] = new Quad(m_width / 2, m_height / 2, m_width, m_height, m_depth + 1, phy);
+        int widT = m_width / 2;
+        int heiT = m_height / 2;
+        children[0] = new Quad(m_x, m_y, widT, heiT, m_depth + 1, phy);
+        children[1] = new Quad(m_x + widT, m_y, widT, heiT, m_depth + 1, phy);
+        children[2] = new Quad(m_x, m_y + heiT, widT, heiT, m_depth + 1, phy);
+        children[3] = new Quad(m_x + widT, m_y + heiT, widT, heiT, m_depth + 1, phy);
 
         //Add vector ids to children
         for (unsigned i = 0; i < m_ids.size(); ++i)
@@ -149,15 +152,22 @@ class Quad
     }
 
     bool
+    rectIntersects(float x, float y, float w, float h)
+    {
+        return x < static_cast<float>(m_x + m_width) && (x + w) > static_cast<float>(m_x) &&
+            y < static_cast<float>(m_y + m_height) && (y + h) > static_cast<float>(m_y);
+    }
+
+    bool
     inQuad(float x, float y)
     {
         return (x >= m_x && x < (m_x + m_width) && y >= m_y && y < (m_y + m_height));
     }
 
-    std::vector<int>
+    std::vector<unsigned>
     query(float x, float y, float rad)
     {
-        std::vector<int> found;
+        std::vector<unsigned> found;
         if (!intersects(x, y, rad))
         {
             //Range isn't in quad
@@ -169,10 +179,10 @@ class Quad
             return m_ids;
         }
         //If there are children combine m_ids
-        std::vector<int> ch0 = children[0]->query(x, y, rad);
-        std::vector<int> ch1 = children[1]->query(x, y, rad);
-        std::vector<int> ch2 = children[2]->query(x, y, rad);
-        std::vector<int> ch3 = children[3]->query(x, y, rad);
+        std::vector<unsigned> ch0 = children[0]->query(x, y, rad);
+        std::vector<unsigned> ch1 = children[1]->query(x, y, rad);
+        std::vector<unsigned> ch2 = children[2]->query(x, y, rad);
+        std::vector<unsigned> ch3 = children[3]->query(x, y, rad);
         found.insert(found.end(), ch0.begin(), ch0.end());
         found.insert(found.end(), ch1.begin(), ch1.end());
         found.insert(found.end(), ch2.begin(), ch2.end());
@@ -181,15 +191,37 @@ class Quad
         return found;
     }
 
+    std::vector<std::array<int, 4>>
+    getQuad()
+    {
+        std::vector<std::array<int, 4>> list;
+        list.push_back(std::array<int, 4>{m_x, m_y, m_width, m_height});
+        //No children
+        if (children[0] == nullptr)
+            return list;
+
+        //Children
+        std::vector<std::array<int, 4>> ch0 = children[0]->getQuad();
+        std::vector<std::array<int, 4>> ch1 = children[1]->getQuad();
+        std::vector<std::array<int, 4>> ch2 = children[2]->getQuad();
+        std::vector<std::array<int, 4>> ch3 = children[3]->getQuad();
+        list.insert(list.end(), ch0.begin(), ch0.end());
+        list.insert(list.end(), ch1.begin(), ch1.end());
+        list.insert(list.end(), ch2.begin(), ch2.end());
+        list.insert(list.end(), ch3.begin(), ch3.end());
+
+        return list;
+    }
+
     
-    unsigned m_x;
-    unsigned m_y;
-    unsigned m_width;
-    unsigned m_height;
-    unsigned m_depth;
+    int m_x;
+    int m_y;
+    int m_width;
+    int m_height;
+    int m_depth;
     PhyWorld* phy;
     Quad* children[4] = {nullptr, nullptr, nullptr, nullptr};
-    std::vector<int> m_ids;
+    std::vector<unsigned> m_ids {};
 };
 
 class Quadtree
@@ -198,7 +230,7 @@ class Quadtree
     Quadtree()
     {}
 
-    Quadtree(unsigned width, unsigned height, PhyWorld* phy) : m_width(width), m_height(height), phy(phy)
+    Quadtree(int width, int height, PhyWorld* phy) : m_width(width), m_height(height), phy(phy)
     {
         m_root = new Quad(0, 0, m_width, m_height, 0, phy);
     }
@@ -227,25 +259,35 @@ class Quadtree
     update()
     {
         //Empty all children of root and root
-        delete m_root->children[0];
+        /*delete m_root->children[0];
         delete m_root->children[1];
         delete m_root->children[2];
         delete m_root->children[3];
+        m_root->children[0] = nullptr;
+        m_root->children[1] = nullptr;
+        m_root->children[2] = nullptr;
+        m_root->children[3] = nullptr;
 
         m_root->m_ids.clear();
         
         //Add all particles back in
-        initAdd();
-        /*
+        initAdd();*/
+        
         //Eventually will need to account for deleted objects
         m_root->update();
-        */
+        
     }
 
-    std::vector<int>
+    std::vector<unsigned>
     query(float x, float y, float rad)
     {
         return m_root->query(x, y, rad);
+    }
+
+    std::vector<std::array<int, 4>>
+    getQuads()
+    {
+        return m_root->getQuad();
     }
 
 
@@ -255,7 +297,7 @@ class Quadtree
     private:
 
     PhyWorld* phy;
-    unsigned m_width;
-    unsigned m_height;
+    int m_width;
+    int m_height;
     Quad* m_root;
 };

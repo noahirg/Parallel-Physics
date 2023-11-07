@@ -49,7 +49,8 @@ Render::updateObjects()
         rObjects[idx + 3].texCoords = {0.f, textureSize};
 
         //Add color component to circles
-        const sf::Color color = sf::Color::White;
+        auto [r, g, b] = ob.getColor();
+        const sf::Color color (r, g, b);
         rObjects[idx + 0].color = color;
         rObjects[idx + 1].color = color;
         rObjects[idx + 2].color = color;
