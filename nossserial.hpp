@@ -19,12 +19,20 @@ noSsSerial (int argc, char **argv)
 {
 
     //PhyWorld physics = PhyWorld(WIDTH, HEIGHT);
-    PhySSS physics = PhySSS(WIDTH, HEIGHT);
+    PhySSS physics (WIDTH, HEIGHT);
 
     sf::VertexArray buf (sf::Triangles, 0);
     //sf::VertexBuffer vBuf (sf::Triangles);
 
     std::vector<sf::Color> colors {sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow,
+    sf::Color::Magenta, sf::Color::Cyan, sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow,
+    sf::Color::Magenta, sf::Color::Cyan, sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow,
+    sf::Color::Magenta, sf::Color::Cyan, sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow,
+    sf::Color::Magenta, sf::Color::Cyan, sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow,
+    sf::Color::Magenta, sf::Color::Cyan, sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow,
+    sf::Color::Magenta, sf::Color::Cyan, sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow,
+    sf::Color::Magenta, sf::Color::Cyan, sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow,
+    sf::Color::Magenta, sf::Color::Cyan, sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow,
     sf::Color::Magenta, sf::Color::Cyan, sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow,
     sf::Color::Magenta, sf::Color::Cyan, sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow,
     sf::Color::Magenta, sf::Color::Cyan, sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow,
@@ -93,10 +101,10 @@ noSsSerial (int argc, char **argv)
         //window.draw(back);
 
         //apply gravity
-        for (unsigned i = 0; i < physics.bodies.size(); ++i)
+        /*for (unsigned i = 0; i < physics.bodies.size(); ++i)
         {
             physics.bodies[i].applyAcc(Vec2f(0, 2000));
-        }
+        }*/
         physics.update(dt.asSeconds());
 
         /*sf::Vector2i mousePos = sf::Mouse::getPosition(window);
@@ -113,17 +121,18 @@ noSsSerial (int argc, char **argv)
         tester.setOutlineThickness(2);
         window.draw(tester);*/
 
-        /*if (physics.bodies.size() > 300)
-            physics.bodies[299].green = 0;*/
+        if (physics.bodies.size() > 300)
+            physics.bodies[299].green = 0;
 
         //Draw quadTree
         std::vector<sf::RectangleShape> rectangles;
-        std::vector<std::array<int, 4>> tree = physics.getQuadtree();
+        std::vector<std::array<int, 4>> grid = physics.getGrid();
 
-        for (unsigned i = 0; i < tree.size(); ++i)
+
+        for (unsigned i = 0; i < grid.size(); ++i)
         {
-            rectangles.emplace_back(sf::Vector2f(tree[i][2], tree[i][3]));
-            rectangles.back().setPosition(tree[i][0], tree[i][1]);
+            rectangles.emplace_back(sf::Vector2f(grid[i][2], grid[i][3]));
+            rectangles.back().setPosition(grid[i][0], grid[i][1]);
             rectangles.back().setFillColor(sf::Color::Transparent);
             rectangles.back().setOutlineColor(colors[i]);
             rectangles.back().setOutlineThickness(1);

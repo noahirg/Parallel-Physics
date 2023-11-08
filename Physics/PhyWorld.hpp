@@ -20,5 +20,5 @@ class PhyWorld
     void applyConstraint();
     void updatePositions(float dt);
     Circle* createCircle(Vec2f pos, float mass, float rad, bool pinned = false);
-    void insertToTree(Vec2f pos, unsigned id);
+    virtual void insertToGrid(Vec2f pos, unsigned id);
 };

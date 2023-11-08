@@ -96,7 +96,7 @@ PhyWorld::createCircle(Vec2f pos, float mass, float rad, bool pinned)
 }
 
 void
-PhyWorld::insertToTree(Vec2f pos, unsigned id)
+PhyWorld::insertToGrid(Vec2f pos, unsigned id)
 {
     //empty on purpose
     return;
