@@ -44,6 +44,7 @@ class PhyPSS : public PhyWorld
         }
     }
 
+    //Number of cells must be divisible by 2 * threadCount for this to work
     void
     splitCells()
     {
@@ -51,30 +52,38 @@ class PhyPSS : public PhyWorld
         unsigned threadCount = tp.getThreadCount();
         unsigned divCount = threadCount * 2;
         unsigned divSize = (DIV * DIV) / divCount;
-        unsigned secSize = divSize / 3;
+        unsigned sections = DIV / divCount;
+        int init = DIV + 3;
 
         //First pass
         for (unsigned i = 0; i < threadCount; ++i)
         {
             //Split into sections so exterior border cells ignored
             tp.addTask(
-                [this, i, secSize]
+                [this, i, sections, init]
                 {
-                    int init = DIV + 3;
+
+                    for (unsigned j = 0; j < sections; ++j)
+                    {
+                        unsigned start = (init * (j + 1) - j) + (DIV * i * 2 * sections + (i * 4 * sections));
+                        unsigned end = start + DIV;
+                        checkCells(start, end);
+                    }
+                    /*
                     //Section 1
-                    unsigned start = init + (secSize * i * 6 + (i * 12));
-                    unsigned end = start + secSize;
+                    unsigned start = init + (DIV * i * 6 + (i * 12));
+                    unsigned end = start + DIV;
                     checkCells(start, end);
 
                     //Section 2
-                    start = (init * 2 - 1) + (secSize * i * 6 + (i * 12));
-                    end = start + secSize;
+                    start = (init * 2 - 1) + (DIV * i * 6 + (i * 12));
+                    end = start + DIV;
                     checkCells(start, end);
 
                     //Section 3
-                    start = (init * 3 - 2) + (secSize * i * 6 + (i * 12));
-                    end = start + secSize;
-                    checkCells(start, end);
+                    start = (init * 3 - 2) + (DIV * i * 6 + (i * 12));
+                    end = start + DIV;
+                    checkCells(start, end);*/
                 });
         }
         tp.wait();
@@ -82,23 +91,30 @@ class PhyPSS : public PhyWorld
         for (unsigned i = 0; i < threadCount; ++i)
         {
             tp.addTask(
-                [this, i, secSize]
+                [this, i, sections, init]
                 {
-                    int init = DIV + 3;
+                    
+                    for (unsigned j = 0; j < sections; ++j)
+                    {
+                        unsigned start = (init * (j + 4) - (j + 3)) + (DIV * i * 2 * sections + (i * 4 * sections));
+                        unsigned end = start + DIV;
+                        checkCells(start, end);
+                    }
+                    /*
                     //Section 1
-                    unsigned start = (init * 4 - 3) + (secSize * i * 6 + (i * 12));
-                    unsigned end = start + secSize;
+                    unsigned start = (init * 4 - 3) + (DIV * i * 6 + (i * 12));
+                    unsigned end = start + DIV;
                     checkCells(start, end);
 
                     //Section 2
-                    start = (init * 5 - 4) + (secSize * i * 6 + (i * 12));
-                    end = start + secSize;
+                    start = (init * 5 - 4) + (DIV * i * 6 + (i * 12));
+                    end = start + DIV;
                     checkCells(start, end);
 
                     //Section 3
-                    start = (init * 6 - 5) + (secSize * i * 6 + (i * 12));
-                    end = start + secSize;
-                    checkCells(start, end);
+                    start = (init * 6 - 5) + (DIV * i * 6 + (i * 12));
+                    end = start + DIV;
+                    checkCells(start, end);*/
                 });
         }
         tp.wait();

@@ -4,7 +4,7 @@
 #include "Circle.hpp"
 #include "PhyWorld.hpp"
 
-const int DIV = 60;
+const int DIV = 100;
 
 class Cell
 {

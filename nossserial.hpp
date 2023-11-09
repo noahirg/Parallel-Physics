@@ -7,8 +7,8 @@
 #include "Physics/PhySSS.hpp"
 #include "Physics/PhyPSS.hpp"
 
-const int WIDTH = 1920;
-const int HEIGHT = 1080;
+const int WIDTH = 1800;
+const int HEIGHT = 900;
 
 void 
 fontThing(sf::RenderWindow &window, float dt, sf::Text& text);
@@ -43,7 +43,7 @@ noSsSerial (int argc, char **argv)
     sf::Color::Magenta, sf::Color::Cyan, sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow,
     sf::Color::Magenta, sf::Color::Cyan, sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow};
 
-    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "ah", sf::Style::Fullscreen);
+    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "ah", sf::Style::Close);
     //window.setActive(false);
 
     
@@ -95,7 +95,7 @@ noSsSerial (int argc, char **argv)
                 {
                     for (int j = 0; j < 20; ++j)
                     {
-                        Circle pm = *physics.createCircle(Vec2f(((i * 450) / 20) + 450 + counter1, ((j * 220) / 20) + 200 + counter1), 1, 5);
+                        Circle pm = *physics.createCircle(Vec2f(((i * 450) / 20) + 450 + counter1, ((j * 220) / 20) + 200 + counter1), 1, 4);
                     }
                 }
             }
@@ -125,8 +125,8 @@ noSsSerial (int argc, char **argv)
             physics.bodies[299].green = 0;
 
         //Draw quadTree
-        std::vector<sf::RectangleShape> rectangles;
-        std::vector<std::array<int, 4>> grid = physics.getGrid();
+        /*std::vector<sf::RectangleShape> rectangles;
+        std::vector<std::array<int, 4>> grid = physics.getGrid();*/
 
 
         /*for (unsigned i = 0; i < grid.size(); ++i)
