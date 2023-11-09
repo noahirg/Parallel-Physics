@@ -96,7 +96,7 @@ class PhyPSS : public PhyWorld
                     
                     for (unsigned j = 0; j < sections; ++j)
                     {
-                        unsigned start = (init * (j + 4) - (j + 3)) + (DIV * i * 2 * sections + (i * 4 * sections));
+                        unsigned start = (init * (j + sections + 1) - (j + sections)) + (DIV * i * 2 * sections + (i * 4 * sections));
                         unsigned end = start + DIV;
                         checkCells(start, end);
                     }
