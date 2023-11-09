@@ -28,7 +28,7 @@ class PhySSS : public PhyWorld
             splitCells();
             updatePositions(dt / static_cast<float>(ITER));
             applyConstraint();
-            //grid->update();
+            grid->update();
         }
     }
 

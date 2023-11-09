@@ -40,7 +40,11 @@ class ThreadPool
             t.join();
     }
 
-    private:
+    unsigned
+    getThreadCount()
+    {
+        return m_threadCount;
+    }
 
     template <typename callable>
     void 
@@ -49,7 +53,8 @@ class ThreadPool
         m_tasks.enqueue(std::forward<callable>(f));
     }
 
-    
+    private:
+
     unsigned m_threadCount;
     ThreadQueue m_tasks;
     std::vector<ThreadObject> m_threads;

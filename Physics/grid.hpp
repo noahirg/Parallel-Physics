@@ -4,7 +4,7 @@
 #include "Circle.hpp"
 #include "PhyWorld.hpp"
 
-const int DIV = 10;
+const int DIV = 60;
 
 class Cell
 {
@@ -128,7 +128,7 @@ class Grid
         int indx = static_cast<int>(x) / cellW;
         int indy = static_cast<int>(y) / cellH;
         
-        m_cells[indx + indy * DIV].add(x, y, id);
+        m_cells[indx + indy * DIV + DIV + 3 + (2 * indy)].add(x, y, id);
     }
 
     void
