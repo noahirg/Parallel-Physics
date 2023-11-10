@@ -25,8 +25,8 @@ class PhyPSS : public PhyWorld
         for (int k = 0; k < ITER; ++k)
         {
             tempColor();
-            //solveCollisions();
             splitCells();
+            updateJoints();
             updatePositions(dt / static_cast<float>(ITER));
             applyConstraint();
             grid->update();
@@ -186,8 +186,8 @@ class PhyPSS : public PhyWorld
             float dist = colAxis.magn();
             Vec2f normal = Vec2f::normalize(colAxis);
             float delta = radD - dist;
-            float di = (jRad / radD) * delta;;
-            float dj = (iRad / radD) * delta;;
+            float di = (jRad / radD) * delta;
+            float dj = (iRad / radD) * delta;
 
             if (bodies[i].pinned && bodies[j].pinned)
                 {di = 0; dj = 0;}

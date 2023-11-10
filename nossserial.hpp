@@ -13,6 +13,9 @@ const int HEIGHT = 900;
 void 
 fontThing(sf::RenderWindow &window, float dt, sf::Text& text);
 
+void
+createSoft(PhyWorld* phy, float x, float y);
+
 
 // Starts the simulation with no spatial partitioning and with a serial physics solver
 int
@@ -46,9 +49,9 @@ noSsSerial (int argc, char **argv)
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "ah", sf::Style::Close);
     //window.setActive(false);
 
-    
     //window.setFramerateLimit(120);
-
+    bool isGravity = true;
+    bool spawnMode = true;
     
     int counter1 = 0;
 
@@ -75,6 +78,9 @@ noSsSerial (int argc, char **argv)
     back.setPosition(640.f, 360.f);
     */
     sf::Clock clock;
+
+    Circle* pair1;
+    Circle* pair2;
     
     while(window.isOpen()) 
     {
@@ -91,12 +97,44 @@ noSsSerial (int argc, char **argv)
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                 ++counter1;
                 //physics.createCircle(Vec2f(mousePos.x, mousePos.y), 1, 5);
-                for (int i = 0; i < 20; ++i)
+                //if (counter1 == 1)
+                //{
+                if (!spawnMode)
+                    createSoft(&physics, mousePos.x, mousePos.y);
+                else
                 {
-                    for (int j = 0; j < 20; ++j)
+                    for (int i = 0; i < 20; ++i)
                     {
-                        Circle pm = *physics.createCircle(Vec2f(((i * 450) / 20) + 450 + counter1, ((j * 220) / 20) + 200 + counter1), 1, 4);
+                        for (int j = 0; j < 20; ++j)
+                        {
+                            Circle* pm = physics.createCircle(Vec2f(((i * 450) / 20) + 450 + counter1, ((j * 220) / 20) + 200 + counter1), 1, 4);
+                        }
                     }
+                }
+
+                //}
+                //else
+                //{
+                    /*if (counter1 == 2)
+                        pair1 = physics.createCircle(Vec2f(mousePos.x, mousePos.y), 1, 4);
+                    else if (counter1 == 3)
+                    {
+                        pair2 = physics.createCircle(Vec2f(mousePos.x, mousePos.y), 1, 4);
+                        physics.createJoint(10, pair1, pair2);
+                    }
+                    else
+                        physics.createCircle(Vec2f(mousePos.x, mousePos.y), 1, 4);*/
+                //}
+            }
+            else if (evnt.type == sf::Event::KeyPressed)
+            {
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+                {
+                    isGravity = !isGravity;
+                }
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
+                {
+                    spawnMode = !spawnMode;
                 }
             }
         }
@@ -139,10 +177,21 @@ noSsSerial (int argc, char **argv)
             window.draw(rectangles.back());
         }*/
 
-
-        for (unsigned i = 0; i < physics.bodies.size(); ++i)
+        //Draw links
+        sf::VertexArray links (sf::Lines, 0);
+        for (unsigned i = 0; i < physics.joints.size(); ++i)
         {
-            physics.bodies[i].applyAcc(Vec2f(0, 2000));
+            links.append( {{physics.bodies[physics.joints[i].cir1].pos.x, physics.bodies[physics.joints[i].cir1].pos.y}} );
+            links.append( {{physics.bodies[physics.joints[i].cir2].pos.x, physics.bodies[physics.joints[i].cir2].pos.y}} );
+        }
+        window.draw(links);
+
+        if (isGravity)
+        {
+            for (unsigned i = 0; i < physics.bodies.size(); ++i)
+            {
+                physics.bodies[i].applyAcc(Vec2f(0, 2000));
+            }
         }
         physics.update(dt.asSeconds());
 
@@ -158,6 +207,48 @@ noSsSerial (int argc, char **argv)
 
     tp.stop();
     return 0;
+}
+
+void
+createSoft(PhyWorld* phy, float x, float y)
+{
+    int dim = 3;
+    std::vector<int> cirs;
+    //Creat circles
+    for (int i = 0; i < dim; ++i)
+    {
+        for (int j = 0; j < dim; ++j)
+        {
+            if (i == 0 && j == 0)
+                phy->createCircle(Vec2f(x + (i * 10), y + (j * 10)), 1, 4, true);
+            else
+                phy->createCircle(Vec2f(x + (i * 10), y + (j * 10)), 1, 4);
+            cirs.push_back( phy->bodies.size() - 1 );
+        }
+    }
+
+    //Connect circles
+    for (int i = 0; i < dim; ++i)
+    {
+        for (int j = 0; j < dim; ++j)
+        {
+            //Right connection
+            if (i != dim - 1)
+            {
+                phy->createJoint(10, cirs[i + j * dim], cirs[i + 1 + j * dim]);
+            }
+            //Down connection
+            if (j != dim - 1)
+            {
+                phy->createJoint(10, cirs[i + j * dim], cirs[i + (j + 1) * dim]);
+            }
+            //Down and right connection
+            if (j != dim - 1 && i != dim - 1)
+            {
+                phy->createJoint(14.1421356237, cirs[i + j * dim], cirs[i + 1 + (j + 1) * dim]);
+            }
+        }
+    }
 }
 
 void 

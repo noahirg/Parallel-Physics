@@ -2,6 +2,7 @@
 #include <vector>
 #include <memory>
 #include "Circle.hpp"
+#include "Joint.hpp"
 
 const int ITER = 8;
 
@@ -11,6 +12,7 @@ class PhyWorld
     public:
     bool checkCollisions;
     std::vector<Circle> bodies;
+    std::vector<Joint> joints;
     Vec2f worldSize;
 
 
@@ -18,7 +20,9 @@ class PhyWorld
     void update(float dt);
     void solveCollisions();
     void applyConstraint();
+    void updateJoints();
     void updatePositions(float dt);
-    Circle* createCircle(Vec2f pos, float mass, float rad, bool pinned = false);
+    virtual Circle* createCircle(Vec2f pos, float mass, float rad, bool pinned = false);
+    Joint* createJoint(float length,int cir1, int cir2);
     virtual void insertToGrid(Vec2f pos, unsigned id);
 };

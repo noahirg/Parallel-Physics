@@ -9,6 +9,7 @@ PhyWorld::update(float dt)
     for (int k = 0; k < ITER; ++k)
     {
         solveCollisions();
+        updateJoints();
         updatePositions(dt / static_cast<float>(ITER));
         applyConstraint();
     }
@@ -36,8 +37,8 @@ PhyWorld::solveCollisions()
                 float dist = colAxis.magn();
                 Vec2f normal = Vec2f::normalize(colAxis);
                 float delta = radD - dist;
-                float di = (jRad / radD) * delta;;
-                float dj = (iRad / radD) * delta;;
+                float di = (jRad / radD) * delta;
+                float dj = (iRad / radD) * delta;
 
                 if (bodies[i].pinned && bodies[j].pinned)
                     {di = 0; dj = 0;}
@@ -80,6 +81,15 @@ PhyWorld::applyConstraint() {
 }
 
 void
+PhyWorld::updateJoints()
+{
+    for (unsigned i = 0; i < joints.size(); ++i)
+    {
+        joints[i].update(&bodies[joints[i].cir1], &bodies[joints[i].cir2]);
+    }
+}
+
+void
 PhyWorld::updatePositions(float dt)
 {
     for (int i = 0; i < bodies.size(); ++i)
@@ -93,6 +103,13 @@ PhyWorld::createCircle(Vec2f pos, float mass, float rad, bool pinned)
 {
     bodies.emplace_back( pos, mass, rad, pinned );
     return &bodies.back();
+}
+
+Joint*
+PhyWorld::createJoint(float length, int cir1, int cir2)
+{
+    joints.emplace_back( length, cir1, cir2 );
+    return &joints.back();
 }
 
 void
