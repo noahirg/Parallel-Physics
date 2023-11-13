@@ -114,6 +114,22 @@ class Vec2
         float y = v1.y + ((v2.x - v1.x) * amt);
         return Vec2<T>(x, y);
     }
+
+    static Vec2<T> max(Vec2<T> &v1, Vec2<T> &v2)
+    {
+        //use by doing Vec2<T>::max
+        if (v1 > v2)
+            return v1;
+        return v2;
+    }
+
+    static Vec2<T> min(Vec2<T> &v1, Vec2<T> &v2)
+    {
+        //use by doing Vec2<T>::max
+        if (v1 < v2)
+            return v2;
+        return v1;
+    }
 };
 
 template <typename T>
@@ -182,6 +198,26 @@ bool operator ==(const Vec2<T> &left, const Vec2<T> &right) {
 template <typename T>
 bool operator !=(const Vec2<T> &left, const Vec2<T> &right) {
     return (left.x != right.x) || (left.y != right.y);
+}
+
+template <typename T>
+bool operator >(const Vec2<T> &left, const Vec2<T> &right) {
+    return (left.x * left.x + left.y * left.y) > (right.x * right.x + right.y * right.y);
+}
+
+template <typename T>
+bool operator <(const Vec2<T> &left, const Vec2<T> &right) {
+    return (left.x * left.x + left.y * left.y) < (right.x * right.x + right.y * right.y);
+}
+
+template <typename T>
+bool operator >=(const Vec2<T> &left, const Vec2<T> &right) {
+    return (left.x * left.x + left.y * left.y) >= (right.x * right.x + right.y * right.y);
+}
+
+template <typename T>
+bool operator <=(const Vec2<T> &left, const Vec2<T> &right) {
+    return (left.x * left.x + left.y * left.y) <= (right.x * right.x + right.y * right.y);
 }
 
 typedef Vec2<int>     Vec2i;

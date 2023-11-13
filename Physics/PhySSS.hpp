@@ -26,7 +26,7 @@ class PhySSS : public PhyWorld
             tempColor();
             //solveCollisions();
             splitCells();
-            updateJoints();
+            updateJoints(dt / static_cast<float>(ITER));
             updatePositions(dt / static_cast<float>(ITER));
             applyConstraint();
             grid->update();

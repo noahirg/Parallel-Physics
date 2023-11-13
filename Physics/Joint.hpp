@@ -12,7 +12,7 @@ class Joint
 
 
     void
-    update(Circle* cir1, Circle* cir2) 
+    update(Circle* cir1, Circle* cir2, float dt) 
     {
         Vec2f axis = cir1->pos - cir2->pos;
         float dist = axis.magn();
@@ -24,9 +24,13 @@ class Joint
         if (!cir2->pinned)
             cir2->pos -= .5f * delta * n;
         */
-        float k = 1000.f;
-        float dampen = .7f;
-        Vec2f force = -k * delta * n * dampen;
+        //Relative velocity
+        Vec2f rel = (cir1->pos - cir1->posOld) - (cir2->pos - cir2->posOld);
+        Vec2f dampen = (rel / dt) * 100.5f;
+        float k = 20000.f;
+        Vec2f force = -k * delta * n;
+        force -= dampen;
+        //prevForce = rel;
         //Using Hooke's law
         cir1->applyForce (force);
         cir2->applyForce (-force);

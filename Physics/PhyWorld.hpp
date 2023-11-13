@@ -20,7 +20,7 @@ class PhyWorld
     void update(float dt);
     void solveCollisions();
     void applyConstraint();
-    void updateJoints();
+    void updateJoints(float dt);
     void updatePositions(float dt);
     virtual Circle* createCircle(Vec2f pos, float mass, float rad, bool pinned = false);
     Joint* createJoint(float length,int cir1, int cir2);

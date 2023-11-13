@@ -49,7 +49,7 @@ noSsSerial (int argc, char **argv)
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "ah", sf::Style::Close);
     //window.setActive(false);
 
-    //window.setFramerateLimit(120);
+    window.setFramerateLimit(120);
     bool isGravity = true;
     bool spawnMode = true;
     
@@ -158,6 +158,15 @@ noSsSerial (int argc, char **argv)
         tester.setOutlineColor(sf::Color::White);
         tester.setOutlineThickness(2);
         window.draw(tester);*/
+        /*if (physics.bodies.size() > 1)
+        {
+            std::cout << physics.bodies[0].pos.x - physics.bodies[0].posOld.x << "\t\t" << physics.bodies[0].pos.y - physics.bodies[0].posOld.y;
+            std::cout << "\t\t\t\t" << physics.bodies[1].pos.x - physics.bodies[1].posOld.x << "\t\t" << physics.bodies[1].pos.y - physics.bodies[1].posOld.y << std::endl;
+        }*/
+        /*if (physics.joints.size() > 0)
+        {
+            std::cout << physics.joints[0].prevForce.x << "\t\t" << physics.joints[0].prevForce.y << std::endl;
+        }*/
 
         if (physics.bodies.size() > 300)
             physics.bodies[299].green = 0;
@@ -178,13 +187,13 @@ noSsSerial (int argc, char **argv)
         }*/
 
         //Draw links
-        sf::VertexArray links (sf::Lines, 0);
+        /*sf::VertexArray links (sf::Lines, 0);
         for (unsigned i = 0; i < physics.joints.size(); ++i)
         {
             links.append( {{physics.bodies[physics.joints[i].cir1].pos.x, physics.bodies[physics.joints[i].cir1].pos.y}} );
             links.append( {{physics.bodies[physics.joints[i].cir2].pos.x, physics.bodies[physics.joints[i].cir2].pos.y}} );
         }
-        window.draw(links);
+        window.draw(links);*/
 
         if (isGravity)
         {
@@ -212,16 +221,16 @@ noSsSerial (int argc, char **argv)
 void
 createSoft(PhyWorld* phy, float x, float y)
 {
-    int dim = 3;
+    int dim = 10;
     std::vector<int> cirs;
     //Creat circles
     for (int i = 0; i < dim; ++i)
     {
         for (int j = 0; j < dim; ++j)
         {
-            if (i == 0 && j == 0)
-                phy->createCircle(Vec2f(x + (i * 10), y + (j * 10)), 1, 4, true);
-            else
+            //if (i == 0 && j == 0)
+            //    phy->createCircle(Vec2f(x + (i * 10), y + (j * 10)), 1, 4, true);
+            //else
                 phy->createCircle(Vec2f(x + (i * 10), y + (j * 10)), 1, 4);
             cirs.push_back( phy->bodies.size() - 1 );
         }

@@ -9,7 +9,7 @@ PhyWorld::update(float dt)
     for (int k = 0; k < ITER; ++k)
     {
         solveCollisions();
-        updateJoints();
+        updateJoints(dt / static_cast<float>(ITER));
         updatePositions(dt / static_cast<float>(ITER));
         applyConstraint();
     }
@@ -81,11 +81,11 @@ PhyWorld::applyConstraint() {
 }
 
 void
-PhyWorld::updateJoints()
+PhyWorld::updateJoints(float dt)
 {
     for (unsigned i = 0; i < joints.size(); ++i)
     {
-        joints[i].update(&bodies[joints[i].cir1], &bodies[joints[i].cir2]);
+        joints[i].update(&bodies[joints[i].cir1], &bodies[joints[i].cir2], dt);
     }
 }
 

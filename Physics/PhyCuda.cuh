@@ -3,18 +3,17 @@
 #include <memory>
 #include "grid.hpp"
 #include "PhyWorld.hpp"
-#include "libr/thread_pool.hpp"
 
-class PhyPSS : public PhyWorld
+class PhyCuda : public PhyWorld
 {
     public:
 
-    PhyPSS(int sizeX, int sizeY, ThreadPool& tp, bool check = false) : PhyWorld(sizeX, sizeY, check), tp(tp)
+    PhyCuda(int sizeX, int sizeY, bool check = false) : PhyWorld(sizeX, sizeY, check)
     {
         grid = new Grid(static_cast<int>(worldSize.x), static_cast<int>(worldSize.y), this);
     }
 
-    ~PhyPSS()
+    ~PhyCuda()
     {
         delete grid;
     }
@@ -276,5 +275,4 @@ class PhyPSS : public PhyWorld
     }
 
     Grid* grid;
-    ThreadPool& tp;
 };
