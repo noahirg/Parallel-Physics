@@ -2,10 +2,12 @@
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
-#include "render.hpp"
-#include "Physics/PhyWorld.hpp"
+//#include "render.hpp"
+#include "renderC.hpp"
+/*#include "Physics/PhyWorld.hpp"
 #include "Physics/PhySSS.hpp"
-#include "Physics/PhyPSS.hpp"
+#include "Physics/PhyPSS.hpp"*/
+#include "Physics/PhyCuda.cuh"
 
 const int WIDTH = 1800;
 const int HEIGHT = 900;
@@ -13,8 +15,11 @@ const int HEIGHT = 900;
 void 
 fontThing(sf::RenderWindow &window, float dt, sf::Text& text);
 
-void
+/*void
 createSoft(PhyWorld* phy, float x, float y);
+*/
+void
+createSoft(PhyCWorld* phy, float x, float y);
 
 
 // Starts the simulation with no spatial partitioning and with a serial physics solver
@@ -25,7 +30,8 @@ noSsSerial (int argc, char **argv)
     ThreadPool tp (10);
 
     //PhyWorld physics = PhyWorld(WIDTH, HEIGHT);
-    PhyPSS physics (WIDTH, HEIGHT, tp);
+    //PhyPSS physics (WIDTH, HEIGHT, tp);
+    PhyCuda physics (WIDTH, HEIGHT);
 
 
     std::vector<sf::Color> colors {sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow,
@@ -49,14 +55,15 @@ noSsSerial (int argc, char **argv)
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "ah", sf::Style::Close);
     //window.setActive(false);
 
-    window.setFramerateLimit(120);
+    //window.setFramerateLimit(120);
     bool isGravity = true;
     bool spawnMode = true;
     
     int counter1 = 0;
 
     
-    Render rd (physics, tp);
+    //Render rd (physics, tp);
+    RenderC rd (physics, tp);
 
 
     //init font
@@ -79,9 +86,8 @@ noSsSerial (int argc, char **argv)
     */
     sf::Clock clock;
 
-    Circle* pair1;
-    Circle* pair2;
-    
+    /*Circle* pair1;
+    Circle* pair2;*/
     while(window.isOpen()) 
     {
         sf::Time dt = clock.restart();
@@ -107,7 +113,8 @@ noSsSerial (int argc, char **argv)
                     {
                         for (int j = 0; j < 20; ++j)
                         {
-                            Circle* pm = physics.createCircle(Vec2f(((i * 450) / 20) + 450 + counter1, ((j * 220) / 20) + 200 + counter1), 1, 4);
+                            physics.createCircle(static_cast<float>(((i * 450) / 20) + 450 + counter1), 
+                                                 static_cast<float>(((j * 220) / 20) + 200 + counter1), 1, 4);
                         }
                     }
                 }
@@ -168,8 +175,8 @@ noSsSerial (int argc, char **argv)
             std::cout << physics.joints[0].prevForce.x << "\t\t" << physics.joints[0].prevForce.y << std::endl;
         }*/
 
-        if (physics.bodies.size() > 300)
-            physics.bodies[299].green = 0;
+        /*if (physics.bodies.size() > 300)
+            physics.bodies[299].green = 0;*/
 
         //Draw quadTree
         /*std::vector<sf::RectangleShape> rectangles;
@@ -194,16 +201,25 @@ noSsSerial (int argc, char **argv)
             links.append( {{physics.bodies[physics.joints[i].cir2].pos.x, physics.bodies[physics.joints[i].cir2].pos.y}} );
         }
         window.draw(links);*/
+        //std::cout << "*******" << std::endl;
 
-        if (isGravity)
+        if (physics.bodies.size() > 0)
+        {
+            int indx = static_cast<int>(physics.bodies[1].posx) / (WIDTH / DIV);
+            int indy = static_cast<int>(physics.bodies[1].posy) / (HEIGHT / DIV);
+
+            //std::cout << "indx: " << indx << "     indy: " << indy << std::endl;
+        }
+
+        if (!isGravity)
         {
             for (unsigned i = 0; i < physics.bodies.size(); ++i)
             {
-                physics.bodies[i].applyAcc(Vec2f(0, 2000));
+                physics.bodies[i].applyAcc(0.f, 2000.f);
             }
         }
         physics.update(dt.asSeconds());
-
+        //std::cout << "(((((((((" << std::endl;
         window.clear();
 
         //draw
@@ -218,7 +234,7 @@ noSsSerial (int argc, char **argv)
     return 0;
 }
 
-void
+/*void
 createSoft(PhyWorld* phy, float x, float y)
 {
     int dim = 10;
@@ -232,6 +248,48 @@ createSoft(PhyWorld* phy, float x, float y)
             //    phy->createCircle(Vec2f(x + (i * 10), y + (j * 10)), 1, 4, true);
             //else
                 phy->createCircle(Vec2f(x + (i * 10), y + (j * 10)), 1, 4);
+            cirs.push_back( phy->bodies.size() - 1 );
+        }
+    }
+
+    //Connect circles
+    for (int i = 0; i < dim; ++i)
+    {
+        for (int j = 0; j < dim; ++j)
+        {
+            //Right connection
+            if (i != dim - 1)
+            {
+                phy->createJoint(10, cirs[i + j * dim], cirs[i + 1 + j * dim]);
+            }
+            //Down connection
+            if (j != dim - 1)
+            {
+                phy->createJoint(10, cirs[i + j * dim], cirs[i + (j + 1) * dim]);
+            }
+            //Down and right connection
+            if (j != dim - 1 && i != dim - 1)
+            {
+                phy->createJoint(14.1421356237, cirs[i + j * dim], cirs[i + 1 + (j + 1) * dim]);
+            }
+        }
+    }
+}*/
+
+void
+createSoft(PhyCWorld* phy, float x, float y)
+{
+    int dim = 10;
+    std::vector<int> cirs;
+    //Creat circles
+    for (int i = 0; i < dim; ++i)
+    {
+        for (int j = 0; j < dim; ++j)
+        {
+            //if (i == 0 && j == 0)
+            //    phy->createCircle(Vec2f(x + (i * 10), y + (j * 10)), 1, 4, true);
+            //else
+                phy->createCircle(x + (i * 10), y + (j * 10), 1, 4);
             cirs.push_back( phy->bodies.size() - 1 );
         }
     }

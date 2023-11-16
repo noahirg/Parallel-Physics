@@ -138,18 +138,20 @@ class PhyPSS : public PhyWorld
     solveCell(unsigned ind)
     {
         if (grid->m_cells[ind].m_ids.size() != 0)
-        for (unsigned i = 0; i < grid->m_cells[ind].m_ids.size(); ++i)
         {
-            unsigned id = grid->m_cells[ind].m_ids[i];
-            checkEleCol(id, grid->m_cells[ind - 1 - (DIV + 2)]);
-            checkEleCol(id, grid->m_cells[ind     - (DIV + 2)]);
-            checkEleCol(id, grid->m_cells[ind + 1 - (DIV + 2)]);
-            checkEleCol(id, grid->m_cells[ind - 1]);
-            checkEleCol(id, grid->m_cells[ind]);
-            checkEleCol(id, grid->m_cells[ind + 1]);
-            checkEleCol(id, grid->m_cells[ind - 1 + (DIV + 2)]);
-            checkEleCol(id, grid->m_cells[ind     + (DIV + 2)]);
-            checkEleCol(id, grid->m_cells[ind + 1 + (DIV + 2)]);
+            for (unsigned i = 0; i < grid->m_cells[ind].m_ids.size(); ++i)
+            {
+                unsigned id = grid->m_cells[ind].m_ids[i];
+                checkEleCol(id, grid->m_cells[ind - 1 - (DIV + 2)]);
+                checkEleCol(id, grid->m_cells[ind     - (DIV + 2)]);
+                checkEleCol(id, grid->m_cells[ind + 1 - (DIV + 2)]);
+                checkEleCol(id, grid->m_cells[ind - 1]);
+                checkEleCol(id, grid->m_cells[ind]);
+                checkEleCol(id, grid->m_cells[ind + 1]);
+                checkEleCol(id, grid->m_cells[ind - 1 + (DIV + 2)]);
+                checkEleCol(id, grid->m_cells[ind     + (DIV + 2)]);
+                checkEleCol(id, grid->m_cells[ind + 1 + (DIV + 2)]);
+            }
         }
     }
 
@@ -269,11 +271,11 @@ class PhyPSS : public PhyWorld
         grid->addSingle(pos.x, pos.y, id);
     }
 
-    std::vector<std::array<int, 4>>
+    /*std::vector<std::array<int, 4>>
     getGrid()
     {
         return grid->getCells();
-    }
+    }*/
 
     Grid* grid;
     ThreadPool& tp;

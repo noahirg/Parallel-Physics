@@ -17,12 +17,12 @@ class PhyWorld
 
 
     PhyWorld(int sizeX, int sizeY, bool check = false);
-    void update(float dt);
-    void solveCollisions();
-    void applyConstraint();
-    void updateJoints(float dt);
-    void updatePositions(float dt);
+    virtual void update(float dt);
+    virtual void solveCollisions();
+    virtual void applyConstraint();
+    virtual void updateJoints(float dt);
+    virtual void updatePositions(float dt);
     virtual Circle* createCircle(Vec2f pos, float mass, float rad, bool pinned = false);
-    Joint* createJoint(float length,int cir1, int cir2);
+    virtual Joint* createJoint(float length,int cir1, int cir2);
     virtual void insertToGrid(Vec2f pos, unsigned id);
 };

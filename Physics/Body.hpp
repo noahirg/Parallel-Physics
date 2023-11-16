@@ -4,12 +4,12 @@
 class Body
 {
     public:
-    Vec2f pos;
-    Vec2f acc;
-    bool pinned;
-    Vec2f posOld;
-    float mass;
-    float rad;
+    Vec2f pos {};
+    Vec2f acc {};
+    bool pinned {};
+    Vec2f posOld {};
+    float mass {};
+    float rad {};
     short red = 255;
     short blue = 255;
     short green = 255;

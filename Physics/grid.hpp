@@ -86,11 +86,12 @@ class Cell
         return m_ids;
     }
 
+    /*
     std::array<int, 4>
     getCell()
     {   
         return {m_x, m_y, m_width, m_height};
-    }
+    }*/
 
     
     int m_x;
@@ -162,7 +163,7 @@ class Grid
         return ids;
     }
 
-    std::vector<std::array<int, 4>>
+    /*std::vector<std::array<int, 4>>
     getCells()
     {
         std::vector<std::array<int, 4>> cellR;
@@ -174,7 +175,7 @@ class Grid
         }
 
         return cellR;
-    }
+    }*/
 
     int
     getCellCount()
