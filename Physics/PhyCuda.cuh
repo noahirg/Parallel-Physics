@@ -47,7 +47,7 @@ class PhyCuda : public PhyCWorld
 
     //Number of cells must be divisible by 2 * threadCount for this to work
     void
-    splitCells();
+    splitCells(CudaCircle* cir, unsigned* ids, unsigned* idLoc);
     
 
     void

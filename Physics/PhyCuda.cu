@@ -3,7 +3,7 @@
 
 __global__
 void
-solveCell(unsigned* ids, unsigned* idLoc, CudaCircle* bodies, const int DIV, int* max);
+solveCell(unsigned* ids, unsigned* idLoc, CudaCircle* bodies, const int DIV);
 
 __device__
 void
@@ -29,15 +29,32 @@ void
 PhyCuda::update(float dt)
 {
     const int ITERC = 8;
+
+    unsigned *ids = new unsigned[bodies.size() + (DIV * DIV)];
+    unsigned *idLoc = new unsigned[DIV * DIV]();
+    cudaMallocManaged(&ids, bodies.size() + (DIV * DIV));
+    cudaMallocManaged(&idLoc, DIV * DIV);
+
+    CudaCircle* cir;
+    cudaMallocManaged(&cir, bodies.size() * sizeof(CudaCircle));
+
+    cudaMemcpy(cir, &bodies[0], bodies.size() * sizeof(CudaCircle), cudaMemcpyHostToDevice);
+
     for (int k = 0; k < ITERC; ++k)
     {
         //tempColor();
-        splitCells();
+        splitCells(cir, ids, idLoc);
         updateJoints(dt / static_cast<float>(ITERC));
         updatePositions(dt / static_cast<float>(ITERC));
         applyConstraint();
         grid->update();
     }
+
+    cudaMemcpy(&bodies[0], cir, bodies.size() * sizeof(CudaCircle), cudaMemcpyDeviceToHost);
+
+    cudaFree(cir);
+    cudaFree(ids);
+    cudaFree(idLoc);
 }
 
 void
@@ -96,23 +113,12 @@ PhyCuda::tempColor()
 
 //Number of cells must be divisible by 2 * threadCount for this to work
 void
-PhyCuda::splitCells()
+PhyCuda::splitCells(CudaCircle* cir, unsigned* ids, unsigned* idLoc)
 {
     //Split into 4 passes
-    int cellPerPass = DIV * DIV;// / 4;
-    //For loop for each pass
-    //for (unsigned i = 0; i < 4; ++i)
-    //{
-        //Solve each cell individually instead of in groups like pool
-        //Grid* gr = grid;
+    
 
-        //Construct contiguous array that holds all ids
-        //Beginning of id block has the size of the particular cell
-        unsigned *ids = new unsigned[bodies.size() + (DIV * DIV)];
-        unsigned *idLoc = new unsigned[DIV * DIV]();
-
-        cudaMallocManaged(&ids, bodies.size() + (DIV * DIV));
-        cudaMallocManaged(&idLoc, DIV * DIV);
+        
         //loop through grid and add ids
         unsigned index = 0;
         //unsigned sum = 0;
@@ -156,22 +162,17 @@ PhyCuda::splitCells()
         }*/
         //cudaMallocManaged(&ids
         //cudaMallocManaged(&grid, sizeof(Grid));
-        CudaCircle* cir;
-        cudaMallocManaged(&cir, bodies.size() * sizeof(CudaCircle));
-
-        cudaMemcpy(cir, &bodies[0], bodies.size() * sizeof(CudaCircle), cudaMemcpyHostToDevice);
+        
         //cir = &bodies[0];
 
 
-
+        int cellPerPass = DIV * DIV;
         int blockSize = 256;
         int numBlocks = (cellPerPass + blockSize - 1) / blockSize;
-        int* max = new int[blockSize * numBlocks]();
-        cudaMallocManaged(&max, sizeof(int));
-        solveCell<<<numBlocks, blockSize>>>(ids, idLoc, cir, DIV, max);
+
+        solveCell<<<numBlocks, blockSize>>>(ids, idLoc, cir, DIV);
         cudaDeviceSynchronize();
 
-        cudaMemcpy(&bodies[0], cir, bodies.size() * sizeof(CudaCircle), cudaMemcpyDeviceToHost);
 
         /*int maxInd = 0;
         for (int i = 0; i < bodies.size() + (DIV * DIV); ++i)
@@ -182,16 +183,13 @@ PhyCuda::splitCells()
         
         std::cout << "maxf: " << maxInd << std::endl;*/
 
-        cudaFree(cir);
-        cudaFree(ids);
-        cudaFree(idLoc);
-        cudaFree(max);
+        
     //}
 }
 
 __global__
 void
-solveCell(unsigned* ids, unsigned* idLoc, CudaCircle* bodies, const int DIV, int* max)
+solveCell(unsigned* ids, unsigned* idLoc, CudaCircle* bodies, const int DIV)
 {
     int nonShiftInd = threadIdx.x + blockIdx.x * blockDim.x;
     int cellSize;
