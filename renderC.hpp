@@ -41,7 +41,7 @@ class RenderC
     void
     updateObjects()
     {
-        rObjects.resize(rPhysics.bodies.size() * 4);
+        rObjects.resize(rPhysics.numEle * 4);
         const float textureSize = 1024.f;
         
 
@@ -49,7 +49,7 @@ class RenderC
         rTp.execute( [&] (unsigned start, unsigned end) {
         for (unsigned i = start; i < end; ++i)
         {
-            CudaCircle& ob = rPhysics.bodies[i];
+            CudaCircle& ob = rPhysics.cir[i];
             float radius = ob.rad;
             unsigned idx = i << 2;
             rObjects[idx + 0].position = sf::Vector2f {ob.posx, ob.posy} + sf::Vector2f {-radius, -radius};
@@ -70,6 +70,6 @@ class RenderC
             rObjects[idx + 2].color = color;
             rObjects[idx + 3].color = color;
         }}
-        , rPhysics.bodies.size());
+        , rPhysics.numEle);
     }
 };

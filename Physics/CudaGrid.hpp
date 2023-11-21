@@ -34,7 +34,7 @@ class CudaCell
 
 
             //If not in cell remove
-            if (!inCell(phy->bodies[m_ids[i]].posx, phy->bodies[m_ids[i]].posy))
+            if (!inCell(phy->cir[m_ids[i]].posx, phy->cir[m_ids[i]].posy))
             {
                 tempRem.push_back(m_ids[i]);
             }
@@ -44,7 +44,7 @@ class CudaCell
         {
             m_ids.erase(std::remove(m_ids.begin(), m_ids.end(), tempRem[i]), m_ids.end());
             //Add them back into Grid
-            phy->insertToGrid(phy->bodies[tempRem[i]].posx, phy->bodies[tempRem[i]].posy, tempRem[i]);
+            phy->insertToGrid(phy->cir[tempRem[i]].posx, phy->cir[tempRem[i]].posy, tempRem[i]);
         }
     }
 
@@ -133,9 +133,9 @@ class CudaGrid
     void
     initAdd()
     {
-        for (unsigned i = 0; i < phy->bodies.size(); ++i)
+        for (unsigned i = 0; i < phy->numEle; ++i)
         {
-            addSingle(phy->bodies[i].posx, phy->bodies[i].posy, i);
+            addSingle(phy->cir[i].posx, phy->cir[i].posy, i);
         }
     }
 

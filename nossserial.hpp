@@ -213,10 +213,11 @@ noSsSerial (int argc, char **argv)
 
         if (!isGravity)
         {
-            for (unsigned i = 0; i < physics.bodies.size(); ++i)
+            physics.applyForceAll(0.f, 2000.f);
+            /*for (unsigned i = 0; i < physics.bodies.size(); ++i)
             {
                 physics.bodies[i].applyAcc(0.f, 2000.f);
-            }
+            }*/
         }
         physics.update(dt.asSeconds());
         //std::cout << "(((((((((" << std::endl;

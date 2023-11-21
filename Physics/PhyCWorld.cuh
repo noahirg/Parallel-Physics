@@ -14,6 +14,10 @@ class PhyCWorld
     std::vector<CudaJoint> joints;
     float worldSizex;
     float worldSizey;
+    unsigned* ids;
+    unsigned* idLoc;
+    CudaCircle* cir;
+    unsigned numEle;
 
 
     PhyCWorld(int sizeX, int sizeY, bool check = false);

@@ -6,6 +6,8 @@
 #include "CudaCircle.hpp"
 #include "CudaJoint.hpp"
 
+const unsigned MAX_CIR_CU = 5'000'000;
+
 class PhyCuda : public PhyCWorld
 {
     public:
@@ -47,7 +49,7 @@ class PhyCuda : public PhyCWorld
 
     //Number of cells must be divisible by 2 * threadCount for this to work
     void
-    splitCells(CudaCircle* cir, unsigned* ids, unsigned* idLoc);
+    splitCells();
     
 
     void
@@ -58,6 +60,9 @@ class PhyCuda : public PhyCWorld
 
     void
     applyConstraint();
+
+    void
+    applyForceAll(float fx, float fy);
 
 
     CudaCircle* 

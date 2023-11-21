@@ -18,11 +18,28 @@ solveCollision(unsigned i, unsigned j, CudaCircle* bodies);
 PhyCuda::PhyCuda(int sizeX, int sizeY, bool check) : PhyCWorld(sizeX, sizeY, check)
 {
     grid = new CudaGrid(static_cast<int>(worldSizex), static_cast<int>(worldSizey), this);
+    ids = new unsigned[MAX_CIR_CU + (DIV * DIV)];
+    idLoc = new unsigned[DIV * DIV]();
+    cudaMallocManaged(&ids, MAX_CIR_CU + (DIV * DIV));
+    cudaMallocManaged(&idLoc, DIV * DIV);
+    cudaMallocManaged(&cir, MAX_CIR_CU * sizeof(CudaCircle));
+    numEle = 0;
+
+
+    /**
+     * need to find alternative to cudamalloc managed
+     * essentially all data needs to live on the gpu during ITERC iterations in update loop
+     * then data should be transfered back to cpu so it can be rendered
+     * 
+     */
 }
 
 PhyCuda::~PhyCuda()
 {
     delete grid;
+    cudaFree(cir);
+    cudaFree(ids);
+    cudaFree(idLoc);
 }
 
 void
@@ -30,31 +47,20 @@ PhyCuda::update(float dt)
 {
     const int ITERC = 8;
 
-    unsigned *ids = new unsigned[bodies.size() + (DIV * DIV)];
-    unsigned *idLoc = new unsigned[DIV * DIV]();
-    cudaMallocManaged(&ids, bodies.size() + (DIV * DIV));
-    cudaMallocManaged(&idLoc, DIV * DIV);
-
-    CudaCircle* cir;
-    cudaMallocManaged(&cir, bodies.size() * sizeof(CudaCircle));
-
-    cudaMemcpy(cir, &bodies[0], bodies.size() * sizeof(CudaCircle), cudaMemcpyHostToDevice);
+    //cudaMemcpy(cir, &bodies[0], bodies.size() * sizeof(CudaCircle), cudaMemcpyHostToDevice);
 
     for (int k = 0; k < ITERC; ++k)
     {
         //tempColor();
-        splitCells(cir, ids, idLoc);
+        splitCells();
         updateJoints(dt / static_cast<float>(ITERC));
         updatePositions(dt / static_cast<float>(ITERC));
         applyConstraint();
         grid->update();
     }
 
-    cudaMemcpy(&bodies[0], cir, bodies.size() * sizeof(CudaCircle), cudaMemcpyDeviceToHost);
-
-    cudaFree(cir);
-    cudaFree(ids);
-    cudaFree(idLoc);
+    //For render purposes
+    //cudaMemcpy(&bodies[0], cir, numEle * sizeof(CudaCircle), cudaMemcpyDeviceToHost);
 }
 
 void
@@ -62,41 +68,43 @@ PhyCuda::updateJoints(float dt)
 {
     for (unsigned i = 0; i < joints.size(); ++i)
     {
-        joints[i].update(&bodies[joints[i].cir1], &bodies[joints[i].cir2], dt);
+        joints[i].update(&cir[joints[i].cir1], &cir[joints[i].cir2], dt);
     }
 }
 
 void
 PhyCuda::updatePositions(float dt)
 {
-    for (int i = 0; i < bodies.size(); ++i)
+    for (int i = 0; i < numEle; ++i)
     {
-        bodies[i].update(dt);
+        cir[i].update(dt);
     }
 }
 
 void
-PhyCuda::applyConstraint() {
-    for (int i = 0; i < bodies.size(); ++i)
+PhyCuda::applyConstraint()
+{
+    for (int i = 0; i < numEle; ++i)
     {
-        if (bodies[i].posx > worldSizex - bodies[i].rad)
-            bodies[i].posx = worldSizex - bodies[i].rad;
-        else if (bodies[i].posx < bodies[i].rad)
-            bodies[i].posx = bodies[i].rad;
+        if (cir[i].posx > worldSizex - cir[i].rad)
+            cir[i].posx = worldSizex - cir[i].rad;
+        else if (cir[i].posx < cir[i].rad)
+            cir[i].posx = cir[i].rad;
 
-        if (bodies[i].posy > worldSizey - bodies[i].rad)
-            bodies[i].posy = worldSizey - bodies[i].rad;
-        else if (bodies[i].posy < bodies[i].rad)
-            bodies[i].posy = bodies[i].rad;
-        /*Vec2f position = Vec2f(640.f, 360.f);
-        float radius = 300.f;
-        Vec2f toObj = bodies[i].pos - position;
-        float distSq = toObj.magnSq();
-        if (distSq > (radius - bodies[i].rad) * (radius - bodies[i].rad)) {
-            float dist = toObj.magn();
-            Vec2f n = toObj / dist;
-            bodies[i].pos = position + n * (radius - bodies[i].rad);
-        }*/
+        if (cir[i].posy > worldSizey - cir[i].rad)
+            cir[i].posy = worldSizey - cir[i].rad;
+        else if (cir[i].posy < cir[i].rad)
+            cir[i].posy = cir[i].rad;
+    }
+}
+
+void
+PhyCuda::applyForceAll(float fx, float fy)
+{
+    //GPU apply force maybe but prob not
+    for (unsigned i = 0; i < numEle; ++i)
+    {
+        cir[i].applyForce(fx, fy);
     }
 }
 
@@ -113,7 +121,7 @@ PhyCuda::tempColor()
 
 //Number of cells must be divisible by 2 * threadCount for this to work
 void
-PhyCuda::splitCells(CudaCircle* cir, unsigned* ids, unsigned* idLoc)
+PhyCuda::splitCells()
 {
     //Split into 4 passes
     
@@ -172,7 +180,6 @@ PhyCuda::splitCells(CudaCircle* cir, unsigned* ids, unsigned* idLoc)
 
         solveCell<<<numBlocks, blockSize>>>(ids, idLoc, cir, DIV);
         cudaDeviceSynchronize();
-
 
         /*int maxInd = 0;
         for (int i = 0; i < bodies.size() + (DIV * DIV); ++i)
@@ -345,11 +352,16 @@ solveCollision(unsigned i, unsigned j, CudaCircle* bodies)
 CudaCircle* 
 PhyCuda::createCircle(float posx, float posy, float mass, float rad, bool pinned)
 {
-    bodies.emplace_back( posx, posy, mass, rad, pinned );
-    //insertToGrid(pos, bodies.size() - 1);
-    grid->addSingle(posx, posy, bodies.size() - 1);
-    //tree->addSingle(pos.x, pos.y, bodies.size() - 1);
-    return &bodies.back();
+    //bodies.emplace_back( posx, posy, mass, rad, pinned );
+    //grid->addSingle(posx, posy, bodies.size() - 1);
+
+    cir[numEle] = CudaCircle (posx, posy, mass, rad, pinned);
+    ++numEle;
+
+
+    grid->addSingle(posx, posy, numEle - 1);
+
+    return &cir[numEle - 1];
 }
 
 void
