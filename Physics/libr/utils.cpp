@@ -33,33 +33,5 @@ std::vector<std::vector<int>> gridSquare(int x, int y, int w, int h, int num) {
             }
         }
     }
-/*
-    for (int i = 0; i < num; i++) {
-        if (!(x-1 <= -1)) {
-            coord.push_back({x-1, y});
-        }
-        if (!(x+1 > w)) {
-            coord.push_back({x+1, y});
-        }
-        if (!(y-1 <= -1)) {
-            coord.push_back({x, y-1});
-        }
-        if (!(y+1 > h)) {
-            coord.push_back({x, y+1});
-        }
-
-        if (!(x-1 <= -1) && !(y-1 <= -1)) {
-            coord.push_back({x-1, y-1});
-        }
-        if (!(x-1 <=-1) && !(y+1 > h)) {
-            coord.push_back({x-1, y+1});
-        }
-        if (!(x+1 > w) && !(y-1 <= -1)) {
-            coord.push_back({x+1, y-1});
-        }
-        if (!(x+1 > w) && !(y+1 > h)) {
-            coord.push_back({x+1, y-1});
-        }
-    }*/
     return coord;
 }

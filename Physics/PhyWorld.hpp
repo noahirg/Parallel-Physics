@@ -14,6 +14,7 @@ class PhyWorld
     std::vector<Circle> bodies;
     std::vector<Joint> joints;
     Vec2f worldSize;
+    Vec2f gravity {};
 
 
     PhyWorld(int sizeX, int sizeY, bool check = false);

@@ -1,4 +1,4 @@
-g++ -c main.cpp -O3 render.cpp Physics\libr\thread_object.cpp Physics\PhyWorld.cpp Physics\Body.cpp Physics\Circle.cpp -I.\SFML-2.6.0\include
+g++ -c -O3 main.cpp render.cpp Physics\libr\thread_object.cpp Physics\PhyWorld.cpp Physics\Body.cpp Physics\Circle.cpp -I.\SFML-2.6.0\include
 g++ main.o render.o thread_object.o PhyWorld.o Body.o Circle.o -o huh.exe -L.\SFML-2.6.0\lib -lsfml-graphics -lsfml-window -lsfml-system -lopengl32 -lwinmm -lgdi32
 Remove-Item main.o
 Remove-Item PhyWorld.o

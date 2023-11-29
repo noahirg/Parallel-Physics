@@ -2,8 +2,8 @@
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
-#include "render.hpp"
-#include "Physics/PhyWorld.hpp"
+#include "renderC.hpp"
+#include "Physics/PhyCuda.cuh"
 
 const int WIDTH = 1800;
 const int HEIGHT = 900;
@@ -20,14 +20,14 @@ createSoft(PhyCuda* phy, float x, float y);*/
 
 // Starts the simulation with no spatial partitioning and with a serial physics solver
 int
-noSsSerial (int argc, char **argv)
+Cuda (int argc, char **argv)
 {
     //Create threadpool
     ThreadPool tp (10);
 
     //PhyWorld physics = PhyWorld(WIDTH, HEIGHT);
     //PhyPSS physics (WIDTH, HEIGHT, tp);
-    PhyWorld physics (WIDTH, HEIGHT);
+    PhyCuda physics (WIDTH, HEIGHT);
 
 
     std::vector<sf::Color> colors {sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow,
@@ -57,7 +57,8 @@ noSsSerial (int argc, char **argv)
     int counter1 = 0;
 
     
-    Render rd (physics, tp);
+    //Render rd (physics, tp);
+    RenderC rd (physics, tp);
 
 
     //init font
@@ -91,15 +92,15 @@ noSsSerial (int argc, char **argv)
                 ++counter1;
                 if (!spawnMode)
                     //createSoft(&physics, mousePos.x, mousePos.y);
-                    physics.createCircle(Vec2f (mousePos.x, mousePos.y), 1, 4);
+                    physics.createCircle(mousePos.x, mousePos.y, 1, 4);
                 else
                 {
                     for (int i = 0; i < 20; ++i)
                     {
                         for (int j = 0; j < 20; ++j)
                         {
-                            physics.createCircle(Vec2f (static_cast<float>(((i * 450) / 20) + 450 + counter1), 
-                                                 static_cast<float>(((j * 220) / 20) + 200 + counter1)), 1, 4);
+                            physics.createCircle(static_cast<float>(((i * 450) / 20) + 450 + counter1), 
+                                                 static_cast<float>(((j * 220) / 20) + 200 + counter1), 1, 4);
                         }
                     }
                 }
@@ -121,11 +122,11 @@ noSsSerial (int argc, char **argv)
 
         if (isGravity)
         {
-            physics.gravity = {0.f, 250.f};
+            physics.gravity = 250.f;
         }
         else
         {
-            physics.gravity = {0.f, 0.f};
+            physics.gravity = 0.f;
         }
         physics.update(dt.asSeconds());
 

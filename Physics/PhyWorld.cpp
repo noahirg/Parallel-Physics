@@ -85,6 +85,7 @@ PhyWorld::updatePositions(float dt)
 {
     for (int i = 0; i < bodies.size(); ++i)
     {
+        bodies[i].acc += gravity;
         bodies[i].update(dt);
     }
 }

@@ -12,7 +12,7 @@ Render::draw(sf::RenderWindow& window)
     states.texture = &rTexture;
     //update particles
     updateObjects();
-    rTp.wait();
+    
     window.draw(rObjects, states);
 }
 
@@ -57,4 +57,5 @@ Render::updateObjects()
         rObjects[idx + 3].color = color;
     }}
     , rPhysics.bodies.size());
+    rTp.wait();
 }

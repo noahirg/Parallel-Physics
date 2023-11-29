@@ -24,7 +24,7 @@ class RenderC
         states.texture = &rTexture;
         //update particles
         updateObjects();
-        rTp.wait();
+        //rTp.wait();
         window.draw(rObjects, states);
     }
 
@@ -69,5 +69,6 @@ class RenderC
             rObjects[idx + 3].color = color;
         }}
         , rPhysics.numEle);
+        rTp.wait();
     }
 };

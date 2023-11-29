@@ -3,7 +3,7 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include "render.hpp"
-#include "Physics/PhyWorld.hpp"
+#include "Physics/PhySSS.hpp"
 
 const int WIDTH = 1800;
 const int HEIGHT = 900;
@@ -20,14 +20,14 @@ createSoft(PhyCuda* phy, float x, float y);*/
 
 // Starts the simulation with no spatial partitioning and with a serial physics solver
 int
-noSsSerial (int argc, char **argv)
+SsSerial (int argc, char **argv)
 {
     //Create threadpool
     ThreadPool tp (10);
 
     //PhyWorld physics = PhyWorld(WIDTH, HEIGHT);
     //PhyPSS physics (WIDTH, HEIGHT, tp);
-    PhyWorld physics (WIDTH, HEIGHT);
+    PhySSS physics (WIDTH, HEIGHT);
 
 
     std::vector<sf::Color> colors {sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow,
@@ -73,7 +73,6 @@ noSsSerial (int argc, char **argv)
 
 
     sf::Clock clock;
-
 
     while(window.isOpen()) 
     {
@@ -133,7 +132,6 @@ noSsSerial (int argc, char **argv)
 
         //draw
         rd.draw(window);
-
 
         fontThing(window, dt.asSeconds(), fps);
         window.display();
