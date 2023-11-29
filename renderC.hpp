@@ -44,10 +44,7 @@ class RenderC
         rObjects.resize(rPhysics.numEle * 4);
         const float textureSize = 1024.f;
 
-        /*if (rPhysics.numEle > 0)
-            std::cout << "valx: " << rPhysics.bodies[0].posx << std::endl;*/
 
-        //Can thread this
         rTp.execute( [&] (unsigned start, unsigned end) {
         for (unsigned i = start; i < end; ++i)
         {
@@ -65,7 +62,6 @@ class RenderC
             rObjects[idx + 3].texCoords = {0.f, textureSize};
 
             //Add color component to circles
-            //auto [r, g, b] = ob.getColor();
             const sf::Color color (255, 255, 255);
             rObjects[idx + 0].color = color;
             rObjects[idx + 1].color = color;

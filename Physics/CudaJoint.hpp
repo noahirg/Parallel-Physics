@@ -21,12 +21,6 @@ class CudaJoint
         float nx = axisx / dist;
         float ny = axisy / dist;
         float delta = dist - length;
-        //delta *= .1f;
-        /*if (!cir1->pinned)
-            cir1->pos += .5f * delta * n;
-        if (!cir2->pinned)
-            cir2->pos -= .5f * delta * n;
-        */
         //Relative velocity
         float relx = (cir1->posx - cir1->posOldx) - (cir2->posx - cir2->posOldx);
         float rely = (cir1->posy - cir1->posOldy) - (cir2->posy - cir2->posOldy);
@@ -37,7 +31,6 @@ class CudaJoint
         float forcey = -k * delta * ny;
         forcex -= dampenx;
         forcey -= dampeny;
-        //prevForce = rel;
         //Using Hooke's law
         //cir1->applyForce (forcex, forcey);
         //cir2->applyForce (-forcex, -forcey);

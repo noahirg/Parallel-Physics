@@ -68,15 +68,6 @@ PhyWorld::applyConstraint() {
             bodies[i].pos.y = worldSize.y - bodies[i].rad;
         else if (bodies[i].pos.y < bodies[i].rad)
             bodies[i].pos.y = bodies[i].rad;
-        /*Vec2f position = Vec2f(640.f, 360.f);
-        float radius = 300.f;
-        Vec2f toObj = bodies[i].pos - position;
-        float distSq = toObj.magnSq();
-        if (distSq > (radius - bodies[i].rad) * (radius - bodies[i].rad)) {
-            float dist = toObj.magn();
-            Vec2f n = toObj / dist;
-            bodies[i].pos = position + n * (radius - bodies[i].rad);
-        }*/
     }
 }
 

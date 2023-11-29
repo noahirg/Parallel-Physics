@@ -15,7 +15,6 @@ ThreadObject::threadExecute()
         while (m_tasks.dequeue(f))
         {
             //Execute what is sent through
-            //std::cout << m_id << std::endl;
             f();
             m_tasks.taskDone();
         }

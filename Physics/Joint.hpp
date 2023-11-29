@@ -30,7 +30,7 @@ class Joint
         float k = 20000.f;
         Vec2f force = -k * delta * n;
         force -= dampen;
-        //prevForce = rel;
+        
         //Using Hooke's law
         cir1->applyForce (force);
         cir2->applyForce (-force);

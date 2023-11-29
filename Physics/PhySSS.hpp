@@ -62,10 +62,6 @@ class PhySSS : public PhyWorld
         //Iterate through cells
         for (unsigned i = start; i < end; ++i)
         {
-            //Skip if no elements in cell
-            /*if (grid->m_cells[i].m_ids.size() == 0)
-                continue;
-            */
             solveCell(i);
         }
     }
@@ -202,12 +198,6 @@ class PhySSS : public PhyWorld
     insertToGrid(Vec2f pos, unsigned id)
     {
         grid->addSingle(pos.x, pos.y, id);
-    }
-
-    std::vector<std::array<int, 4>>
-    getGrid()
-    {
-        return grid->getCells();
     }
 
     Grid* grid;

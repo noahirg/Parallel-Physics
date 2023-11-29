@@ -18,8 +18,8 @@ fontThing(sf::RenderWindow &window, float dt, sf::Text& text);
 /*void
 createSoft(PhyWorld* phy, float x, float y);
 */
-void
-createSoft(PhyCWorld* phy, float x, float y);
+/*void
+createSoft(PhyCuda* phy, float x, float y);*/
 
 
 // Starts the simulation with no spatial partitioning and with a serial physics solver
@@ -53,10 +53,9 @@ noSsSerial (int argc, char **argv)
     sf::Color::Magenta, sf::Color::Cyan, sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow};
 
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "ah", sf::Style::Close);
-    //window.setActive(false);
 
-    //window.setFramerateLimit(120);
-    bool isGravity = true;
+
+    bool isGravity = false;
     bool spawnMode = true;
     
     int counter1 = 0;
@@ -78,16 +77,9 @@ noSsSerial (int argc, char **argv)
     
 
 
-    /*sf::CircleShape back(300.f);
-    back.setPointCount(500);
-    back.setFillColor(sf::Color::Black);
-    back.setOrigin(300.f, 300.f);
-    back.setPosition(640.f, 360.f);
-    */
     sf::Clock clock;
 
-    /*Circle* pair1;
-    Circle* pair2;*/
+
     while(window.isOpen()) 
     {
         sf::Time dt = clock.restart();
@@ -102,11 +94,9 @@ noSsSerial (int argc, char **argv)
             else if (sf::Event::MouseButtonPressed == evnt.type) {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                 ++counter1;
-                //physics.createCircle(Vec2f(mousePos.x, mousePos.y), 1, 5);
-                //if (counter1 == 1)
-                //{
                 if (!spawnMode)
-                    createSoft(&physics, mousePos.x, mousePos.y);
+                    //createSoft(&physics, mousePos.x, mousePos.y);
+                    physics.createCircle(mousePos.x, mousePos.y, 1, 4);
                 else
                 {
                     for (int i = 0; i < 20; ++i)
@@ -118,20 +108,6 @@ noSsSerial (int argc, char **argv)
                         }
                     }
                 }
-
-                //}
-                //else
-                //{
-                    /*if (counter1 == 2)
-                        pair1 = physics.createCircle(Vec2f(mousePos.x, mousePos.y), 1, 4);
-                    else if (counter1 == 3)
-                    {
-                        pair2 = physics.createCircle(Vec2f(mousePos.x, mousePos.y), 1, 4);
-                        physics.createJoint(10, pair1, pair2);
-                    }
-                    else
-                        physics.createCircle(Vec2f(mousePos.x, mousePos.y), 1, 4);*/
-                //}
             }
             else if (evnt.type == sf::Event::KeyPressed)
             {
@@ -146,72 +122,15 @@ noSsSerial (int argc, char **argv)
             }
         }
         
-        //window.clear(sf::Color(128, 128, 128));
-        //window.draw(back);
-
-        //apply gravity
         
 
-        /*sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-        std::vector<unsigned> range = physics.tree->query(mousePos.x, mousePos.y, 50);
-        for (int i = 0; i < range.size(); ++i)
+        if (isGravity)
         {
-            physics.bodies[range[i]].red = 0;
-        }*/
-
-        /*sf::RectangleShape tester (sf::Vector2f(320, 180));
-        tester.setPosition(1, 1);
-        tester.setFillColor(sf::Color::Transparent);
-        tester.setOutlineColor(sf::Color::White);
-        tester.setOutlineThickness(2);
-        window.draw(tester);*/
-        /*if (physics.bodies.size() > 1)
-        {
-            std::cout << physics.bodies[0].pos.x - physics.bodies[0].posOld.x << "\t\t" << physics.bodies[0].pos.y - physics.bodies[0].posOld.y;
-            std::cout << "\t\t\t\t" << physics.bodies[1].pos.x - physics.bodies[1].posOld.x << "\t\t" << physics.bodies[1].pos.y - physics.bodies[1].posOld.y << std::endl;
-        }*/
-        /*if (physics.joints.size() > 0)
-        {
-            std::cout << physics.joints[0].prevForce.x << "\t\t" << physics.joints[0].prevForce.y << std::endl;
-        }*/
-
-        /*if (physics.bodies.size() > 300)
-            physics.bodies[299].green = 0;*/
-
-        //Draw quadTree
-        /*std::vector<sf::RectangleShape> rectangles;
-        std::vector<std::array<int, 4>> grid = physics.getGrid();*/
-
-
-        /*for (unsigned i = 0; i < grid.size(); ++i)
-        {
-            rectangles.emplace_back(sf::Vector2f(grid[i][2], grid[i][3]));
-            rectangles.back().setPosition(grid[i][0], grid[i][1]);
-            rectangles.back().setFillColor(sf::Color::Transparent);
-            rectangles.back().setOutlineColor(colors[i]);
-            rectangles.back().setOutlineThickness(1);
-            window.draw(rectangles.back());
-        }*/
-
-        //Draw links
-        /*sf::VertexArray links (sf::Lines, 0);
-        for (unsigned i = 0; i < physics.joints.size(); ++i)
-        {
-            links.append( {{physics.bodies[physics.joints[i].cir1].pos.x, physics.bodies[physics.joints[i].cir1].pos.y}} );
-            links.append( {{physics.bodies[physics.joints[i].cir2].pos.x, physics.bodies[physics.joints[i].cir2].pos.y}} );
+            physics.gravity = 250.f;
         }
-        window.draw(links);*/
-        //std::cout << "*******" << std::endl;
-
-        
-
-        if (!isGravity)
+        else
         {
-            physics.applyForceAll(0.f, 2000.f);
-            /*for (unsigned i = 0; i < physics.bodies.size(); ++i)
-            {
-                physics.bodies[i].applyAcc(0.f, 2000.f);
-            }*/
+            physics.gravity = 0.f;
         }
         physics.update(dt.asSeconds());
         //std::cout << "(((((((((" << std::endl;
@@ -276,8 +195,8 @@ createSoft(PhyWorld* phy, float x, float y)
     }
 }*/
 
-void
-createSoft(PhyCWorld* phy, float x, float y)
+/*void
+createSoft(PhyCuda* phy, float x, float y)
 {
     int dim = 10;
     std::vector<int> cirs;
@@ -315,7 +234,7 @@ createSoft(PhyCWorld* phy, float x, float y)
             }
         }
     }
-}
+}*/
 
 void 
 fontThing(sf::RenderWindow &window, float dt, sf::Text& text) 

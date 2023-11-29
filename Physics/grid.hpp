@@ -30,10 +30,6 @@ class Cell
         //Make sure elements still in this cell
         for (unsigned i = 0; i < m_ids.size(); ++i)
         {
-            //Need to account for deleted circles
-            //Can add id to circle class and check if it exists still
-
-
             //If not in cell remove
             if (!inCell(phy->bodies[m_ids[i]].pos.x, phy->bodies[m_ids[i]].pos.y))
             {
@@ -85,13 +81,6 @@ class Cell
         //Range in cell
         return m_ids;
     }
-
-    /*
-    std::array<int, 4>
-    getCell()
-    {   
-        return {m_x, m_y, m_width, m_height};
-    }*/
 
     
     int m_x;
@@ -163,19 +152,6 @@ class Grid
         return ids;
     }
 
-    /*std::vector<std::array<int, 4>>
-    getCells()
-    {
-        std::vector<std::array<int, 4>> cellR;
-
-        //Construct rects of all cells
-        for (unsigned i = 0; i < m_cells.size(); ++i)
-        {
-            cellR.push_back(m_cells[i].getCell());
-        }
-
-        return cellR;
-    }*/
 
     int
     getCellCount()

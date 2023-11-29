@@ -69,21 +69,6 @@ class PhyPSS : public PhyWorld
                         unsigned end = start + DIV;
                         checkCells(start, end);
                     }
-                    /*
-                    //Section 1
-                    unsigned start = init + (DIV * i * 6 + (i * 12));
-                    unsigned end = start + DIV;
-                    checkCells(start, end);
-
-                    //Section 2
-                    start = (init * 2 - 1) + (DIV * i * 6 + (i * 12));
-                    end = start + DIV;
-                    checkCells(start, end);
-
-                    //Section 3
-                    start = (init * 3 - 2) + (DIV * i * 6 + (i * 12));
-                    end = start + DIV;
-                    checkCells(start, end);*/
                 });
         }
         tp.wait();
@@ -100,21 +85,7 @@ class PhyPSS : public PhyWorld
                         unsigned end = start + DIV;
                         checkCells(start, end);
                     }
-                    /*
-                    //Section 1
-                    unsigned start = (init * 4 - 3) + (DIV * i * 6 + (i * 12));
-                    unsigned end = start + DIV;
-                    checkCells(start, end);
-
-                    //Section 2
-                    start = (init * 5 - 4) + (DIV * i * 6 + (i * 12));
-                    end = start + DIV;
-                    checkCells(start, end);
-
-                    //Section 3
-                    start = (init * 6 - 5) + (DIV * i * 6 + (i * 12));
-                    end = start + DIV;
-                    checkCells(start, end);*/
+                    
                 });
         }
         tp.wait();
@@ -126,10 +97,6 @@ class PhyPSS : public PhyWorld
         //Iterate through cells
         for (unsigned i = start; i < end; ++i)
         {
-            //Skip if no elements in cell
-            /*if (grid->m_cells[i].m_ids.size() == 0)
-                continue;
-            */
             solveCell(i);
         }
     }
@@ -176,12 +143,9 @@ class PhyPSS : public PhyWorld
 
         Vec2f colAxis = bodies[i].pos - bodies[j].pos;
         float distSq = colAxis.magnSq();
-        //for poly - get line it crossed 
         // push the shape along the normal of that line
         float iRad = bodies[i].rad;
         float jRad = bodies[j].rad;
-        //float jRad = bodies[i].getRad(bodies[j].pos);
-        //float iRad = bodies[j].getRad(bodies[i].pos);
         float radD = iRad + jRad;
         if (distSq < radD * radD && distSq > epsilon)
         {
@@ -204,56 +168,6 @@ class PhyPSS : public PhyWorld
         }
     }
 
-    void
-    solveCollisions()
-    {
-        //std::cout << "begin solColl" << std::endl;
-        float epsilon = .0001f;
-        for (int i = 0; i < bodies.size(); ++i)
-        {
-            //Runs but query still isn't right
-            std::vector<unsigned> range = grid->query(bodies[i].pos.x, bodies[i].pos.y, 2 * bodies[i].rad);
-            for (int j = 0; j < range.size(); ++j)
-            {
-                if (i == range[j])
-                    continue;
-
-                if (i == 299)
-                {
-                    bodies[range[j]].red = 0;
-                }
-
-                Vec2f colAxis = bodies[i].pos - bodies[range[j]].pos;
-                float distSq = colAxis.magnSq();
-                //for poly - get line it crossed 
-                // push the shape along the normal of that line
-                float iRad = bodies[i].rad;
-                float jRad = bodies[range[j]].rad;
-                //float jRad = bodies[i].getRad(bodies[j].pos);
-                //float iRad = bodies[j].getRad(bodies[i].pos);
-                float radD = iRad + jRad;
-                if (distSq < radD * radD && distSq > epsilon)
-                {
-                    float dist = colAxis.magn();
-                    Vec2f normal = Vec2f::normalize(colAxis);
-                    float delta = radD - dist;
-                    float di = (jRad / radD) * delta;;
-                    float dj = (iRad / radD) * delta;;
-
-                    if (bodies[i].pinned && bodies[range[j]].pinned)
-                        {di = 0; dj = 0;}
-                    else if (bodies[i].pinned)
-                        dj = delta;
-                    else if (bodies[range[j]].pinned)
-                        di = delta;
-
-                    
-                    bodies[i].pos += di * normal;
-                    bodies[range[j]].pos -= dj * normal;
-                }
-            }
-        }
-    }
 
     Circle* 
     createCircle(Vec2f pos, float mass, float rad, bool pinned = false)
@@ -271,11 +185,6 @@ class PhyPSS : public PhyWorld
         grid->addSingle(pos.x, pos.y, id);
     }
 
-    /*std::vector<std::array<int, 4>>
-    getGrid()
-    {
-        return grid->getCells();
-    }*/
 
     Grid* grid;
     ThreadPool& tp;
