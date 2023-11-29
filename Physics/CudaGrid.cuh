@@ -1,16 +1,20 @@
 #pragma once
 #include <vector>
 #include <algorithm>
-#include "CudaCircle.hpp"
+#include "CudaCircle.cuh"
 #include "PhyCWorld.cuh"
 
-const int DIV = 100;
+const int DIV = 150;
 
-class CudaCell
+/*class CudaCell
 {
     public:
-    CudaCell(int x, int y, int width, int height, PhyCWorld* phy)
-        : m_x(x), m_y(y), m_width(width), m_height(height), phy(phy)
+    CudaCell(int x, int y, int width, int height, CudaCircle* cir, CudaCell* cellsL)
+        : m_x(x), m_y(y), m_width(width), m_height(height), cir(cir), cells(cellsL)
+    {}
+
+    CudaCell()
+        : m_x(0), m_y(0), m_width(0), m_height(0)
     {}
 
     void
@@ -34,7 +38,7 @@ class CudaCell
 
 
             //If not in cell remove
-            if (!inCell(phy->cir[m_ids[i]].posx, phy->cir[m_ids[i]].posy))
+            if (!inCell(cir[m_ids[i]].posx, cir[m_ids[i]].posy))
             {
                 tempRem.push_back(m_ids[i]);
             }
@@ -44,7 +48,11 @@ class CudaCell
         {
             m_ids.erase(std::remove(m_ids.begin(), m_ids.end(), tempRem[i]), m_ids.end());
             //Add them back into Grid
-            phy->insertToGrid(phy->cir[tempRem[i]].posx, phy->cir[tempRem[i]].posy, tempRem[i]);
+            int indx = static_cast<int>(cir[tempRem[i]].posx) / m_width;
+            int indy = static_cast<int>(cir[tempRem[i]].posy) / m_height;
+            cells[indx + indy * DIV].add(x, y, tempRem[i]);
+
+            //phy->insertToGrid(cir[tempRem[i]].posx, cir[tempRem[i]].posy, tempRem[i]);
         }
     }
 
@@ -89,63 +97,96 @@ class CudaCell
     getCell()
     {   
         return {m_x, m_y, m_width, m_height};
-    }*/
+    }*-/
 
     
     int m_x;
     int m_y;
     int m_width;
     int m_height;
-    PhyCWorld* phy;
+    CudaCircle* cir;
+    CudaCell* cells;
     std::vector<unsigned> m_ids {};
+};
+*/
+
+class CudaCell
+{
+    public:
+    /*CudaCell(int x, int y, int width, int height)
+        : m_x(x), m_y(y), m_width(width), m_height(height), count(0)
+    {}*/
+
+    CudaCell();
+    //{}
+
+    void
+    add(float x, float y, unsigned id);
+    /*{
+        m_ids[count] = id;
+        ++count;
+    }*/
+    
+    unsigned count;
+    unsigned m_ids[20];
 };
 
 class CudaGrid
 {
     public:
-    CudaGrid()
-    {}
+    CudaGrid();
+    //{}
 
-    CudaGrid(int width, int height, PhyCWorld* phy) : m_width(width), m_height(height), cellW(width / DIV),  cellH(height / DIV), phy(phy)
-    {
+    CudaGrid(int width, int height, CudaCircle* cir, unsigned numEle);
+    /*{
         //Divide world into cells
         //Make sure width and height divisible by DIV
         for (int i = 0; i < DIV ; ++i)
         {
             for (int j = 0; j < DIV ; ++j)
             {
-                m_cells.emplace_back(j * cellW, i * cellH, cellW, cellH, phy);
+                m_cells.emplace_back(j * cellW, i * cellH, cellW, cellH);
             }
         }
-    }
+        cudaMalloc(&cudaCells, m_cells.size() * sizeof(cudaCells));
+        cudaMemcpy(cudaCells, m_cells.data(), m_cells.size() * sizeof(cudaCells), cudaMemcpyHostToDevice);
+
+        //Use GPU to put objects into grid
+        int blockSize = 256;
+        int numBlocks = (numEle + blockSize - 1) / blockSize;
+        addToGrid<<<numEle, blockSize>>>(cir, cudaCells, cellW, cellH, numEle);
+        cudaDeviceSynchronize();
+    }*/
+
+    ~CudaGrid();
 
 
     void
-    addSingle(float x, float y, unsigned id)
-    {
+    addSingle(float x, float y, unsigned id);
+    /*{
         //Check to which cell it goes in
         int indx = static_cast<int>(x) / cellW;
         int indy = static_cast<int>(y) / cellH;
         
         m_cells[indx + indy * DIV].add(x, y, id);
-    }
+    }*/
 
-    void
+    /*void
     initAdd()
     {
         for (unsigned i = 0; i < phy->numEle; ++i)
         {
             addSingle(phy->cir[i].posx, phy->cir[i].posy, i);
         }
-    }
+    }*/
 
     void
-    update()
-    {
+    update(unsigned numEle);
+    /*{
         /*for (unsigned i = 0; i < m_cells.size(); ++i){
             m_cells[i].update();}*/
 
-        for (unsigned j = 0; j < DIV; ++j)
+        /*for (unsigned j = 0; j < DIV; ++j)
         {
             for (unsigned i = 0; i < DIV; ++i)
             {
@@ -154,52 +195,33 @@ class CudaGrid
                 m_cells[i + j * DIV].update();
                 
             }
-        }
-    }
+        }*-/
+        //Set all cell counts to 0
+        int blockSize = 256;
+        int numBlocks = (DIV * DIV + blockSize - 1) / blockSize;
 
-    std::vector<unsigned>
-    query(float x, float y, float rad)
-    {
-        std::vector<unsigned> ids;
-        for (unsigned i = 0; i < m_cells.size(); ++i)
-        {
-            //Get objects in relevant cells
-            std::vector<unsigned> cellCon = m_cells[i].query(x, y, rad);
+        resetCounts<<<numBlocks, blockSize>>>(cudaCells);
 
-            ids.insert(ids.end(), cellCon.begin(), cellCon.end());
-        }
-
-        return ids;
-    }
-
-    /*std::vector<std::array<int, 4>>
-    getCells()
-    {
-        std::vector<std::array<int, 4>> cellR;
-
-        //Construct rects of all cells
-        for (unsigned i = 0; i < m_cells.size(); ++i)
-        {
-            cellR.push_back(m_cells[i].getCell());
-        }
-
-        return cellR;
+        //Call addToGrid to re-add all particles
+        numBlocks = (numEle + blockSize - 1) / blockSize;
+        addToGrid<<<numEle, blockSize>>>(cir, cudaCells, cellW, cellH, numEle);
+        cudaDeviceSynchronize();
     }*/
 
     int
-    getCellCount()
-    {
+    getCellCount();
+    /*{
         return m_cells.size();
-    }
+    }*/
 
 
 
     //private:
 
-    PhyCWorld* phy;
+    CudaCircle* cir;
     int m_width;
     int m_height;
     int cellH;
     int cellW;
-    std::vector<CudaCell> m_cells;
+    CudaCell* cudaCells;
 };

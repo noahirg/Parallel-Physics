@@ -203,13 +203,7 @@ noSsSerial (int argc, char **argv)
         window.draw(links);*/
         //std::cout << "*******" << std::endl;
 
-        if (physics.bodies.size() > 0)
-        {
-            int indx = static_cast<int>(physics.bodies[1].posx) / (WIDTH / DIV);
-            int indy = static_cast<int>(physics.bodies[1].posy) / (HEIGHT / DIV);
-
-            //std::cout << "indx: " << indx << "     indy: " << indy << std::endl;
-        }
+        
 
         if (!isGravity)
         {
@@ -223,8 +217,13 @@ noSsSerial (int argc, char **argv)
         //std::cout << "(((((((((" << std::endl;
         window.clear();
 
+        /*if (physics.numEle > 0)
+            std::cout << "shit1" << std::endl;*/
         //draw
         rd.draw(window);
+
+        /*if (physics.numEle > 0)
+            std::cout << "shit2" << std::endl;*/
 
         fontThing(window, dt.asSeconds(), fps);
         window.display();
@@ -290,8 +289,7 @@ createSoft(PhyCWorld* phy, float x, float y)
             //if (i == 0 && j == 0)
             //    phy->createCircle(Vec2f(x + (i * 10), y + (j * 10)), 1, 4, true);
             //else
-                phy->createCircle(x + (i * 10), y + (j * 10), 1, 4);
-            cirs.push_back( phy->bodies.size() - 1 );
+            phy->createCircle(x + (i * 10), y + (j * 10), 1, 4);
         }
     }
 

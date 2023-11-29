@@ -1,4 +1,5 @@
 #pragma once
+#include <cuda_runtime.h>
 #include <iostream>
 
 class CudaCircle
@@ -19,6 +20,7 @@ class CudaCircle
     CudaCircle(float x, float y, float mass, float rad, bool pinned = false) : posx(x), posy(y), mass(mass), rad(rad), pinned(pinned), posOldx(x), posOldy(y)
     {}
 
+    __device__
     void
     update(float dt)
     {
@@ -35,6 +37,7 @@ class CudaCircle
         accy = {};
     }
 
+    __device__
     void
     applyForce(float fx, float fy)
     {
@@ -73,3 +76,13 @@ class CudaCircle
 
     
 };
+
+#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
+{
+   if (code != cudaSuccess) 
+   {
+      fprintf(stderr,"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+      if (abort) exit(code);
+   }
+}

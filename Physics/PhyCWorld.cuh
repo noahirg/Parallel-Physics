@@ -2,7 +2,7 @@
 #include <vector>
 #include <memory>
 #include <iostream>
-#include "CudaCircle.hpp"
+#include "CudaCircle.cuh"
 #include "CudaJoint.hpp"
 
 
@@ -10,7 +10,8 @@ class PhyCWorld
 {
     public:
     bool checkCollisions;
-    std::vector<CudaCircle> bodies;
+    //std::vector<CudaCircle> bodies;
+    CudaCircle* bodies;
     std::vector<CudaJoint> joints;
     float worldSizex;
     float worldSizey;

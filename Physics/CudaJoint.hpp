@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cmath>
-#include "CudaCircle.hpp"
+#include "CudaCircle.cuh"
 
 class CudaJoint
 {
@@ -39,8 +39,8 @@ class CudaJoint
         forcey -= dampeny;
         //prevForce = rel;
         //Using Hooke's law
-        cir1->applyForce (forcex, forcey);
-        cir2->applyForce (-forcex, -forcey);
+        //cir1->applyForce (forcex, forcey);
+        //cir2->applyForce (-forcex, -forcey);
     }
 
     float length;

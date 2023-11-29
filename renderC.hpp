@@ -43,13 +43,15 @@ class RenderC
     {
         rObjects.resize(rPhysics.numEle * 4);
         const float textureSize = 1024.f;
-        
+
+        /*if (rPhysics.numEle > 0)
+            std::cout << "valx: " << rPhysics.bodies[0].posx << std::endl;*/
 
         //Can thread this
         rTp.execute( [&] (unsigned start, unsigned end) {
         for (unsigned i = start; i < end; ++i)
         {
-            CudaCircle& ob = rPhysics.cir[i];
+            CudaCircle& ob = rPhysics.bodies[i];
             float radius = ob.rad;
             unsigned idx = i << 2;
             rObjects[idx + 0].position = sf::Vector2f {ob.posx, ob.posy} + sf::Vector2f {-radius, -radius};

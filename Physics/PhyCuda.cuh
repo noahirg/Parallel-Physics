@@ -1,9 +1,9 @@
 #pragma once
 #include <vector>
 #include <memory>
-#include "CudaGrid.hpp"
+#include "CudaGrid.cuh"
 #include "PhyCWorld.cuh"
-#include "CudaCircle.hpp"
+#include "CudaCircle.cuh"
 #include "CudaJoint.hpp"
 
 const unsigned MAX_CIR_CU = 5'000'000;

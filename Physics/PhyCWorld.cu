@@ -1,7 +1,9 @@
 #include "PhyCWorld.cuh"
 
 PhyCWorld::PhyCWorld(int sizeX, int sizeY, bool check) : checkCollisions(check), worldSizex(sizeX), worldSizey(sizeY)
-{}
+{
+    bodies = new CudaCircle[5'000'000];
+}
 
 void
 PhyCWorld::update(float dt)
@@ -18,7 +20,7 @@ PhyCWorld::update(float dt)
 
 void
 PhyCWorld::applyConstraint() {
-    for (int i = 0; i < bodies.size(); ++i)
+    for (int i = 0; i < 0; ++i)
     {
         if (bodies[i].posx > worldSizex - bodies[i].rad)
             bodies[i].posx = worldSizex - bodies[i].rad;
@@ -53,17 +55,16 @@ PhyCWorld::updateJoints(float dt)
 void
 PhyCWorld::updatePositions(float dt)
 {
-    for (int i = 0; i < bodies.size(); ++i)
+    for (int i = 0; i < 0; ++i)
     {
-        bodies[i].update(dt);
+        //bodies[i].update(dt);
     }
 }
 
 CudaCircle* 
 PhyCWorld::createCircle(float posx, float posy, float mass, float rad, bool pinned)
 {
-    bodies.emplace_back( posx, posy, mass, rad, pinned );
-    return &bodies.back();
+    return {};
 }
 
 CudaJoint*

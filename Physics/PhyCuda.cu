@@ -3,27 +3,38 @@
 
 __global__
 void
-solveCell(unsigned* ids, unsigned* idLoc, CudaCircle* bodies, const int DIV);
+solveCell(CudaCircle* bodies, CudaCell* cells, const int DIV);
 
 __device__
 void
-checkEleCol(unsigned id, unsigned* ids, unsigned start, CudaCircle* bodies);
+checkEleCol(unsigned id, unsigned idx, CudaCircle* bodies, CudaCell* cells);
 
 __device__
 void
 solveCollision(unsigned i, unsigned j, CudaCircle* bodies);
 
+__global__
+void
+updatePos(unsigned count, CudaCircle* cir, float dt);
+
+__global__
+void
+applyCon(unsigned count, CudaCircle* cir, float worldSizex, float worldSizey);
+
+__global__
+void
+applyForAll(unsigned count, CudaCircle* cir, float fx, float fy);
 
 
 PhyCuda::PhyCuda(int sizeX, int sizeY, bool check) : PhyCWorld(sizeX, sizeY, check)
 {
-    grid = new CudaGrid(static_cast<int>(worldSizex), static_cast<int>(worldSizey), this);
-    ids = new unsigned[MAX_CIR_CU + (DIV * DIV)];
+    /*ids = new unsigned[MAX_CIR_CU + (DIV * DIV)];
     idLoc = new unsigned[DIV * DIV]();
-    cudaMallocManaged(&ids, MAX_CIR_CU + (DIV * DIV));
-    cudaMallocManaged(&idLoc, DIV * DIV);
-    cudaMallocManaged(&cir, MAX_CIR_CU * sizeof(CudaCircle));
+    cudaMalloc(&ids, MAX_CIR_CU + (DIV * DIV));
+    cudaMalloc(&idLoc, DIV * DIV);*/
+    cudaMalloc(&cir, MAX_CIR_CU * sizeof(CudaCircle));
     numEle = 0;
+    grid = new CudaGrid(static_cast<int>(worldSizex), static_cast<int>(worldSizey), cir, numEle);
 
 
     /**
@@ -38,8 +49,6 @@ PhyCuda::~PhyCuda()
 {
     delete grid;
     cudaFree(cir);
-    cudaFree(ids);
-    cudaFree(idLoc);
 }
 
 void
@@ -53,14 +62,18 @@ PhyCuda::update(float dt)
     {
         //tempColor();
         splitCells();
-        updateJoints(dt / static_cast<float>(ITERC));
+        /*if (numEle > 0)
+            std::cout << "piss1" << std::endl;*/
+        //updateJoints(dt / static_cast<float>(ITERC));
         updatePositions(dt / static_cast<float>(ITERC));
         applyConstraint();
-        grid->update();
+        grid->update(numEle);
     }
 
     //For render purposes
-    //cudaMemcpy(&bodies[0], cir, numEle * sizeof(CudaCircle), cudaMemcpyDeviceToHost);
+    cudaMemcpy(bodies, cir, numEle * sizeof(CudaCircle), cudaMemcpyDeviceToHost);
+    /*if (numEle > 0)
+            std::cout << "posx: " << bodies[0].posx << "    posy: " << bodies[0].posy << std::endl;*/
 }
 
 void
@@ -75,16 +88,37 @@ PhyCuda::updateJoints(float dt)
 void
 PhyCuda::updatePositions(float dt)
 {
-    for (int i = 0; i < numEle; ++i)
-    {
-        cir[i].update(dt);
-    }
+    //GPUd
+    int blockSize = 256;
+    int numBlocks = (numEle + blockSize - 1) / blockSize;
+    updatePos<<<numBlocks, blockSize>>>(numEle, cir, dt);
+
+    cudaDeviceSynchronize();
+}
+
+__global__
+void
+updatePos(unsigned count, CudaCircle* cir, float dt)
+{
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    if (idx >= count)
+        return;
+
+    /*if (idx == 0)
+            printf("valx: %f\n", cir[0].posx);*/
+
+    cir[idx].update(dt);
 }
 
 void
 PhyCuda::applyConstraint()
 {
-    for (int i = 0; i < numEle; ++i)
+    int blockSize = 256;
+    int numBlocks = (numEle + blockSize - 1) / blockSize;
+    applyCon<<<numBlocks, blockSize>>>(numEle, cir, worldSizex, worldSizey);
+
+    cudaDeviceSynchronize();
+    /*for (int i = 0; i < numEle; ++i)
     {
         if (cir[i].posx > worldSizex - cir[i].rad)
             cir[i].posx = worldSizex - cir[i].rad;
@@ -95,17 +129,55 @@ PhyCuda::applyConstraint()
             cir[i].posy = worldSizey - cir[i].rad;
         else if (cir[i].posy < cir[i].rad)
             cir[i].posy = cir[i].rad;
-    }
+    }*/
+}
+
+__global__
+void
+applyCon(unsigned count, CudaCircle* cir, float worldSizex, float worldSizey)
+{
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+
+    if (idx >= count)
+        return;
+
+
+    if (cir[idx].posx > worldSizex - cir[idx].rad)
+        cir[idx].posx = worldSizex - cir[idx].rad;
+    else if (cir[idx].posx < cir[idx].rad)
+        cir[idx].posx = cir[idx].rad;
+
+    if (cir[idx].posy > worldSizey - cir[idx].rad)
+        cir[idx].posy = worldSizey - cir[idx].rad;
+    else if (cir[idx].posy < cir[idx].rad)
+        cir[idx].posy = cir[idx].rad;
 }
 
 void
 PhyCuda::applyForceAll(float fx, float fy)
 {
     //GPU apply force maybe but prob not
-    for (unsigned i = 0; i < numEle; ++i)
+    int blockSize = 256;
+    int numBlocks = (numEle + blockSize - 1) / blockSize;
+    applyForAll<<<numBlocks, blockSize>>>(numEle, cir, fx, fy);
+
+    cudaDeviceSynchronize();
+    /*for (unsigned i = 0; i < numEle; ++i)
     {
         cir[i].applyForce(fx, fy);
-    }
+    }*/
+}
+
+__global__
+void
+applyForAll(unsigned count, CudaCircle* cir, float fx, float fy)
+{
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+
+    if (idx >= count)
+        return;
+
+    cir[idx].applyForce(fx, fy);
 }
 
 /*void
@@ -128,6 +200,8 @@ PhyCuda::splitCells()
 
         
         //loop through grid and add ids
+        /*unsigned* t_ids = new unsigned[numEle + (DIV * DIV)];
+        unsigned* t_idLoc = new unsigned[DIV * DIV];
         unsigned index = 0;
         //unsigned sum = 0;
         for (unsigned j = 0; j < DIV; ++j)
@@ -150,8 +224,12 @@ PhyCuda::splitCells()
                 }
             }
         }
+
+        cudaMemcpy(ids, t_ids, numEle + (DIV * DIV), cudaMemcpyHostToDevice);
+        cudaMemcpy(idLoc, t_idLoc, DIV * DIV, cudaMemcpyHostToDevice);
         
-        
+        delete[] t_ids;
+        delete[] t_idLoc;*/
         //Construct array of pointers to m_cells.m_ids essentially
         /*unsigned **ids = new unsigned*[cellPerPass];
         for (unsigned j = 0; j < DIV; ++j)
@@ -178,7 +256,8 @@ PhyCuda::splitCells()
         int blockSize = 256;
         int numBlocks = (cellPerPass + blockSize - 1) / blockSize;
 
-        solveCell<<<numBlocks, blockSize>>>(ids, idLoc, cir, DIV);
+        //solveCell<<<numBlocks, blockSize>>>(ids, idLoc, cir, DIV);
+        solveCell<<<numBlocks, blockSize>>>(cir, grid->cudaCells, DIV);
         cudaDeviceSynchronize();
 
         /*int maxInd = 0;
@@ -196,8 +275,54 @@ PhyCuda::splitCells()
 
 __global__
 void
-solveCell(unsigned* ids, unsigned* idLoc, CudaCircle* bodies, const int DIV)
+//solveCell(unsigned* ids, unsigned* idLoc, CudaCircle* bodies, CudaCell* cells, const int DIV)
+solveCell(CudaCircle* bodies, CudaCell* cells, const int DIV)
 {
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+
+    if (idx >= DIV * DIV)
+        return;
+
+
+    int cellSize = cells[idx].count;
+
+    if (cellSize == 0)
+        return;
+
+
+    for (int i = 0; i < cellSize; ++i)
+    {
+        unsigned id = cells[idx].m_ids[i];
+        
+        if (idx / DIV != 0 && idx % DIV != 0)
+            checkEleCol(id, idx - DIV - 1, bodies, cells);
+            
+        if (idx / DIV != 0)
+            checkEleCol(id, idx - DIV, bodies, cells);
+
+        if (idx / DIV != 0 && (idx + 1) % DIV != 0) 
+            checkEleCol(id, idx - DIV + 1, bodies, cells);
+
+        if (idx % DIV != 0)
+            checkEleCol(id, idx - 1, bodies, cells);
+
+        checkEleCol(id, idx, bodies, cells);
+
+        if ((idx + 1) % DIV != 0)
+            checkEleCol(id, idx + 1, bodies, cells);
+
+        if (idx / DIV != DIV - 1 && idx % DIV != 0)
+            checkEleCol(id, idx + DIV - 1, bodies, cells);
+
+        if (idx / DIV != DIV - 1)
+        checkEleCol(id, idx + DIV, bodies, cells);
+
+        if (idx / DIV != DIV - 1 && (idx + 1) % DIV != 0)
+            checkEleCol(id, idx + DIV + 1, bodies, cells);
+    }
+
+    
+    /*
     int nonShiftInd = threadIdx.x + blockIdx.x * blockDim.x;
     int cellSize;
     int idInd;
@@ -216,12 +341,9 @@ solveCell(unsigned* ids, unsigned* idLoc, CudaCircle* bodies, const int DIV)
     /*max[nonShiftInd] = cellSize;
     if (nonShiftInd == 4426)
     {
-        //printf("nonShiftInd: %d\n", nonShiftInd);
-        //printf("fuck yourself\n");
-        //printf("cellsize: %d\n", cellSize);
         if (cellSize != 0)
         printf("start: %d,    end: %d\n", start, end);
-    }*/
+    }*-/
 
     if (cellSize != 0)
     {
@@ -256,7 +378,7 @@ solveCell(unsigned* ids, unsigned* idLoc, CudaCircle* bodies, const int DIV)
             if (nonShiftInd / DIV != DIV - 1 && (nonShiftInd + 1) % DIV != 0)
                 checkEleCol(id, ids, idLoc[nonShiftInd + DIV + 1], bodies);
         }
-    }
+    }*/
 }
 
 /*__global__
@@ -284,6 +406,18 @@ solveCell(Grid* grid, Circle* bodies, const int DIV)
 
 __device__
 void
+checkEleCol(unsigned id, unsigned idx, CudaCircle* bodies, CudaCell* cells)
+{
+    int cellSize = cells[idx].count;
+    
+    for (int i = 0; i < cellSize; ++i)
+    {
+        solveCollision(id, cells[idx].m_ids[i], bodies);
+    }
+}
+
+/*__device__
+void
 checkEleCol(unsigned id, unsigned* ids, unsigned start, CudaCircle* bodies)
 {
     int cellSize = ids[start];
@@ -297,7 +431,7 @@ checkEleCol(unsigned id, unsigned* ids, unsigned start, CudaCircle* bodies)
         solveCollision(id, ids[i], bodies);
     }
     //printf("id: %d\n", id);
-}
+}*/
 
 __device__
 void
@@ -355,13 +489,14 @@ PhyCuda::createCircle(float posx, float posy, float mass, float rad, bool pinned
     //bodies.emplace_back( posx, posy, mass, rad, pinned );
     //grid->addSingle(posx, posy, bodies.size() - 1);
 
-    cir[numEle] = CudaCircle (posx, posy, mass, rad, pinned);
+    CudaCircle circ (posx, posy, mass, rad, pinned);
+    cudaMemcpy(&(cir[numEle]), &circ, sizeof(CudaCircle), cudaMemcpyHostToDevice);
     ++numEle;
 
+    //grid->update(numEle);
+    //grid->addSingle(posx, posy, numEle - 1);
 
-    grid->addSingle(posx, posy, numEle - 1);
-
-    return &cir[numEle - 1];
+    return {};//&cir[numEle - 1];
 }
 
 void
