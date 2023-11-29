@@ -198,9 +198,9 @@ CudaGrid::update(unsigned numEle)
 
     //Call addToGrid to re-add all particles
     numBlocks = (numEle + blockSize - 1) / blockSize;
-    //addToGrid<<<numBlocks, blockSize>>>(cir, cudaCells, cellW, cellH, numEle);
-    addToGrid<<<1, 1>>>(cir, cudaCells, cellW, cellH, numEle);
-    //cudaDeviceSynchronize();
+    addToGrid<<<numBlocks, blockSize>>>(cir, cudaCells, cellW, cellH, numEle);
+    //addToGrid<<<1, 1>>>(cir, cudaCells, cellW, cellH, numEle);
+    cudaDeviceSynchronize();
 }
 
 int
@@ -213,7 +213,7 @@ __global__
 void
 addToGrid(CudaCircle* cir, CudaCell* cells, int cellW, int cellH, int numEle)
 {
-    for (unsigned i = 0; i < numEle; ++i)
+    /*for (unsigned i = 0; i < numEle; ++i)
     {
         int indx = static_cast<int>(cir[i].posx) / cellW;
         int indy = static_cast<int>(cir[i].posy) / cellH;
@@ -223,8 +223,8 @@ addToGrid(CudaCircle* cir, CudaCell* cells, int cellW, int cellH, int numEle)
         //int index = atomicAdd(&curCell.count, 1);
         ++curCell.count;
         curCell.m_ids[curCell.count - 1] = i;
-    }
-    /*int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    }*/
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
 
 
     if (idx >= numEle)
@@ -235,8 +235,9 @@ addToGrid(CudaCircle* cir, CudaCell* cells, int cellW, int cellH, int numEle)
     int indy = static_cast<int>(cir[idx].posy) / cellH;
     
     int index = atomicAdd(&(cells[indx + indy * DIV].count), 1);
+    
     //++cells[indx + indy * DIV].count;
-    cells[indx + indy * DIV].m_ids[index - 1] = idx;*/
+    cells[indx + indy * DIV].m_ids[index] = idx;
 }
 
 __global__
