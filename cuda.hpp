@@ -9,7 +9,7 @@ const int WIDTH = 1800;
 const int HEIGHT = 900;
 
 void 
-fontThing(sf::RenderWindow &window, float dt, sf::Text& text);
+fontThing(sf::RenderWindow &window, float dt, sf::Text& text, int count);
 
 /*void
 createSoft(PhyWorld* phy, float x, float y);
@@ -49,7 +49,7 @@ Cuda (int argc, char **argv)
     sf::Color::Magenta, sf::Color::Cyan, sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow};
 
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "ah", sf::Style::Close);
-
+    window.setFramerateLimit(120);
 
     bool isGravity = false;
     bool spawnMode = true;
@@ -99,8 +99,8 @@ Cuda (int argc, char **argv)
                     {
                         for (int j = 0; j < 20; ++j)
                         {
-                            physics.createCircle(static_cast<float>(((i * 450) / 20) + 450 + counter1), 
-                                                 static_cast<float>(((j * 220) / 20) + 200 + counter1), 1, 4);
+                            physics.createCircle(static_cast<float>((i * 20) + mousePos.x), 
+                                                 static_cast<float>((j * 20) + mousePos.y), 1, 4);
                         }
                     }
                 }
@@ -136,7 +136,7 @@ Cuda (int argc, char **argv)
         rd.draw(window);
 
 
-        fontThing(window, dt.asSeconds(), fps);
+        fontThing(window, dt.asSeconds(), fps, physics.numEle);
         window.display();
         
     }
@@ -229,10 +229,9 @@ createSoft(PhyCuda* phy, float x, float y)
 }*/
 
 void 
-fontThing(sf::RenderWindow &window, float dt, sf::Text& text) 
+fontThing(sf::RenderWindow &window, float dt, sf::Text& text, int count) 
 {
-    std::string poop = std::to_string(1.f/dt);
+    std::string poop = std::to_string(count) + "    " + std::to_string(1.f/dt);
     text.setString(poop);
     window.draw(text);
 }
-

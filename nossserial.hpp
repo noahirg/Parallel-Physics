@@ -49,7 +49,7 @@ noSsSerial (int argc, char **argv)
     sf::Color::Magenta, sf::Color::Cyan, sf::Color::Black, sf::Color::White, sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow};
 
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "ah", sf::Style::Close);
-
+    window.setFramerateLimit(120);
 
     bool isGravity = false;
     bool spawnMode = true;

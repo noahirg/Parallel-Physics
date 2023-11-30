@@ -3,8 +3,8 @@
 #include <algorithm>
 #include "CudaCircle.cuh"
 
-const int DIV = 100;
-
+const int DIV = 300;
+//const int DIV = 100;
 
 class CudaCell
 {

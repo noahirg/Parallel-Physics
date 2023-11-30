@@ -136,10 +136,6 @@ class PhyPSS : public PhyWorld
     {
         float epsilon = .0001f;
 
-        if (i == 299)
-        {
-            bodies[j].red = 0;
-        }
 
         Vec2f colAxis = bodies[i].pos - bodies[j].pos;
         float distSq = colAxis.magnSq();

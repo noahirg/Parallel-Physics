@@ -308,6 +308,12 @@ void
 PhyCuda::createCircle(float posx, float posy, float mass, float rad, bool pinned)
 {
     CudaCircle circ (posx, posy, mass, rad, pinned);
+    if (pinned)
+    {
+        circ.accx = 1000000.f;
+        circ.accy = 100000.f;
+    }
+    circ.pinned = false;
     cudaMemcpy(&(cir[numEle]), &circ, sizeof(CudaCircle), cudaMemcpyHostToDevice);
     ++numEle;
 }
